@@ -27,12 +27,17 @@ function initMap() {
 
         d3.csv("data/summer.csv").then(data => {
             olympicsData = data
-
+            console.log(data)
             let yearAggregate = aggregate(olympicsData, "Year")
             console.log(yearAggregate)
             let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
             console.log(countryAggregate)
+            let sportAggregate = aggregate(olympicsData, 'Sport', 'Athlete')
+            console.log(sportAggregate)
+
         });
+
+
 
 
 
@@ -48,11 +53,9 @@ function initMap() {
        for(let i = 0; i < data.length; i++) {
            let paramValue = data[i][param]
            let groupParamValue  = groupParam ? data[i][groupParam] : ""
-            if(groupParamValue === "1900") {
-                let x = 0;
-            }
 
-           if((!groupParamValue && !aggregatedData.hasOwnProperty(data[i][paramValue])) || (groupParamValue && !aggregatedData.hasOwnProperty(data[i][paramValue][groupParamValue]))) {
+
+           if((!aggregatedData.hasOwnProperty(paramValue))) {
                aggregatedData[paramValue] = {}
                if(!groupParam) {
                    aggregatedData[paramValue]['medals'] = {}
@@ -71,6 +74,16 @@ function initMap() {
                    aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
                }
            }
+
+           if(groupParamValue && !aggregatedData[paramValue].hasOwnProperty(groupParamValue)) {
+               aggregatedData[paramValue][groupParamValue] = {}
+               aggregatedData[paramValue][groupParamValue]['medals'] = {}
+               aggregatedData[paramValue][groupParamValue]['medals']['gold'] = 0;
+               aggregatedData[paramValue][groupParamValue]['medals']['silver'] = 0;
+               aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
+           }
+
+
            if(data[i]['Medal'] === 'Gold') {
                if(!groupParamValue) {
                    aggregatedData[paramValue]['medals']['gold']++
@@ -92,11 +105,9 @@ function initMap() {
                    aggregatedData[paramValue]['medals']['bronze']++
                }
                else{
-                   if(!aggregatedData[paramValue][groupParamValue]) {
-                       let x = 0;
-                   }
                    aggregatedData[paramValue][groupParamValue]['medals']['bronze']++
-               }            }
+               }
+           }
        }
        return aggregatedData;
     }
