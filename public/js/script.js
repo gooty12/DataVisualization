@@ -15,13 +15,14 @@ function initMap() {
             for(let i = 0; i < countryData.length; i++) {
                 let discrepent = true;
                 for(let j = 0; j < data.length; j++) {
-                    if(countryData[i]['Country'].toLowerCase() === data[j]['country'].toLowerCase()) {
+                    if((countryData[i]['Country'].toLowerCase() === data[j]['country'].toLowerCase()) || (countryData[i]['Code'].toLowerCase() === data[j]['geo'].toLowerCase())) {
                         discrepent = false;
                         countryData[i]['mapId'] = data[j]['geo'];
                         break;
                     }
                 }
-                if(!discrepent) {
+                if(discrepent) {
+                    countryData[i]['mapId'] = 'NA';
                     discrepentList.push(countryData[i])
                 }
 
