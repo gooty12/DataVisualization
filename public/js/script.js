@@ -6,6 +6,31 @@ function initMap() {
     d3.csv("data/dictionary.csv").then(countries => {
         let geocoder = new google.maps.Geocoder;
         countryData = countries
+        console.log(countryData)
+
+        d3.csv("data/pop.csv").then(data => {
+            //console.log(data)
+            let discrepentList = [];
+
+            for(let i = 0; i < countryData.length; i++) {
+                let discrepent = true;
+                for(let j = 0; j < data.length; j++) {
+                    if(countryData[i]['Country'].toLowerCase() === data[j]['country'].toLowerCase()) {
+                        discrepent = false;
+                        countryData[i]['mapId'] = data[j]['geo'];
+                        break;
+                    }
+                }
+                if(!discrepent) {
+                    discrepentList.push(countryData[i])
+                }
+
+            }
+
+            console.log(countryData)
+            console.log(discrepentList)
+        });
+
 
 
         /*for(let i = 0; i < countries.length; i++) {
@@ -27,15 +52,19 @@ function initMap() {
 
         d3.csv("data/summer.csv").then(data => {
             olympicsData = data
-            console.log(data)
+           // console.log(data)
             let yearAggregate = aggregate(olympicsData, "Year")
-            console.log(yearAggregate)
+            //console.log(yearAggregate)
             let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
-            console.log(countryAggregate)
+            //console.log(countryAggregate)
             let sportAggregate = aggregate(olympicsData, 'Sport', 'Athlete')
-            console.log(sportAggregate)
+            //console.log(sportAggregate)
 
         });
+
+
+
+
 
 
 
