@@ -1,4 +1,9 @@
 
+function init() {
+    initMap();
+}
+
+
 function initMap() {
     let olympicsData = {}
     let countryData = {}
@@ -54,9 +59,9 @@ function initMap() {
         d3.csv("data/summer.csv").then(data => {
             olympicsData = data
            // console.log(data)
-            let yearAggregate = aggregate(olympicsData, "Year")
+            let yearAggregate = aggregate(olympicsData, "Year", 'Country')
             //console.log(yearAggregate)
-            let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
+            let countryAggregate = aggregate(olympicsData, 'Year', 'Country')
             //console.log(countryAggregate)
             let sportAggregate = aggregate(olympicsData, 'Sport', 'Athlete')
             //console.log(sportAggregate)
