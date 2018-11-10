@@ -38,7 +38,7 @@ class WorldMap{
         // console.log(this.populationData);
         //console.log(this.nameArray);
         let currentYearData = this.yearAggregate[year];
-        console.log(geojson.features)
+        //console.log(geojson.features)
 
         let countryData = geojson.features.map(country => {
             let countryID = this.reverseMappings[country.id.toLowerCase()];
@@ -57,7 +57,7 @@ class WorldMap{
 
         });
 
-        console.log(countryData)
+        //console.log(countryData)
         let path = d3.geoPath().projection(this.projection);
         let graticule = d3.geoGraticule();
         let svg = d3.select("#map-chart").append("svg");

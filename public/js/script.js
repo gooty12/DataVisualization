@@ -6,7 +6,7 @@ loadData().then(data => {
     let olympicsData = data['olympicsData'];
     let countryData = data['countryData'];
     setMapIds(countryData, olympicsData)
-    console.log(olympicsData)
+   // console.log(olympicsData)
 
 
 
