@@ -5,8 +5,9 @@ loadData().then(data => {
     let self = this;
     let olympicsData = data['olympicsData'];
     let countryData = data['countryData'];
-    setMapIds(countryData, olympicsData)
-    console.log(olympicsData)
+    let pop = data['pop'];
+
+    let mappings =  getMappings(countryData, pop)
 
 
 
@@ -16,21 +17,15 @@ loadData().then(data => {
     //const worldMap = new Map(data, updateCountry);
 
     d3.json('data/world.json').then(mapData => {
+        console.log(mapData)
         let yearAggregate = aggregate(olympicsData, "Year", "Country")
         console.log(yearAggregate)
-        let reverseMappings = {};
-        for(let i = 0; i < olympicsData.length; i++) {
-            if(olympicsData[i]['mapId']) {
-                reverseMappings[olympicsData[i]['mapId']] = olympicsData[i]['Country']
 
-            }
-
-        }
          //console.log(reverseMappings)
-        let map = new WorldMap(yearAggregate, reverseMappings)
+       let map = new WorldMap(yearAggregate, mappings)
 
 
-        map.drawMap(mapData, "2012");
+       map.drawMap(mapData);
 
     });
 
@@ -42,38 +37,45 @@ loadData().then(data => {
 
 });
 
-function setMapIds(countryData, olympicsData) {
-    d3.csv("data/pop.csv").then(data => {
-        let countryMap = {};
-        let countryNameMap = {}
-        let geoMap = {};
-        for(let i = 0; i < countryData.length; i++) {
-            let discrepent = true;
-            countryNameMap[countryData[i]['Code']] = countryData[i]['Country']
+function getMappings(countryData, data) {
+    let mappings = {}
+    let self = this;
+        let countryIdMap = {};
+        let countryNameMap = {};
+        let reverseCountryIdMap = {};
+        let reverserCountryNameMap = {};
+        let countryIdToName = {};
+        for (let i = 0; i < countryData.length; i++) {
 
-            for(let j = 0; j < data.length; j++) {
-                if((countryData[i]['Country'].toLowerCase() === data[j]['country'].toLowerCase())) {
-                    countryMap[countryData[i]['Code']] = data[j]['geo'];
+            let discrepent = true;
+            countryIdToName[countryData[i]['Code']] = countryData[i]['Country']
+
+            for (let j = 0; j < data.length; j++) {
+                if ((countryData[i]['Code'] === data[j]['geo'].toUpperCase())) {
+                    countryIdMap[countryData[i]['Code']] = data[j]['geo'].toUpperCase();
+                    reverseCountryIdMap[data[j]['geo'].toUpperCase()] = countryData[i]['Code'];
+                    discrepent = false;
+                    break;
+                }
+                else if ((countryData[i]['Country'].toUpperCase() === data[j]['country'].toUpperCase())) {
+                    countryNameMap[countryData[i]['Country']] = data[j]['geo'].toUpperCase()
+                    reverserCountryNameMap[data[j]['geo'].toUpperCase()] = countryData[i]['Country'];
                     discrepent = false;
                 }
-                else if ((countryData[i]['Code'].toLowerCase() === data[j]['geo'].toLowerCase())) {
-                    countryMap[countryData[i]['Code']] = data[j]['geo']
-
-                    discrepent =false;
-                }
             }
-            if(discrepent) {
-                countryData[i]['mapId'] = 'NA';
-            }
+
         }
+        let val = {
+            countryIdMap : countryIdMap,
+            countryNameMap: countryNameMap,
+            reverseCountryIdMap: reverseCountryIdMap,
+            reverserCountryNameMap: reverserCountryNameMap,
+            countryIdToName: countryIdToName
 
-        for(let i = 0; i < olympicsData.length; i++) {
-            olympicsData[i]['countryName'] = countryNameMap[olympicsData[i]['Country']]
-            olympicsData[i]['mapId'] = countryMap[olympicsData[i]['Country']]
         }
-
-
-    });
+        self.mappings = Object.assign({}, val)
+    return self.mappings;
+}
 
 
 
@@ -130,7 +132,7 @@ function initMap() {
 
 
 
-}
+
 
 async function loadFile(file) {
     let data = await d3.csv(file).then(d => {

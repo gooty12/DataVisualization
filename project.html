@@ -3,38 +3,27 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Visualization – Homework 4</title>
-    <link rel="stylesheet" href="public/css/styles.css"/>
+    <link rel="stylesheet" href="public/css/styles.css" />
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v2.js"></script>
 
-    <script type="application/javascript" src="public/js/Map.js"></script>
-
-    <script type="application/javascript" src="public/js/script.js"></script>
-
+    <script src="public/js/map.js" async></script>
+    <script src="public/js/script.js" async></script>
 </head>
 
 <body>
+<div class="header">
 
-<div class="innerWrapper">
-    <div id="map-chart" class="view">
-
-
-    </div>
-    <div id="country-detail"></div>
-</div><div  id="lineChart"></div>
 </div>
+<div id="mapView">
+    <svg width="850" height="460">
+        <g id="map"></g>
 
-
-<p class="info">Name: Krunal Jain; E-Mail: krunal.bitsy@gmail.com; UID: u1140629</p>
-
-
-
-
-
+    </svg>
+</div>
 </body>
-</html>
 
+</html>
