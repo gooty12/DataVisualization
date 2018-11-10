@@ -8,6 +8,7 @@ loadData().then(data => {
     let pop = data['pop'];
 
     let mappings =  getMappings(countryData, pop)
+   // console.log(olympicsData)
 
 
 
