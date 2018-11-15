@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v2.js"></script>
 
+
     <script src="public/js/map.js" async></script>
     <script src="public/js/script.js" async></script>
 </head>
@@ -18,11 +19,19 @@
 <div class="header">
 
 </div>
-<div id="mapView">
-    <svg width="850" height="460">
-        <g id="map"></g>
+<div class="wrapper">
+    <div class="innerWrapper">
+        <div id="map-chart" class="view">
 
-    </svg>
+
+        </div>
+        <div id="country-detail"></div>
+    </div>
+
+    <div id="scatter-plot" class="view">
+
+    </div>
+
 </div>
 </body>
 

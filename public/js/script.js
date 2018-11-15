@@ -8,7 +8,7 @@ loadData().then(data => {
     let pop = data['pop'];
 
     let mappings =  getMappings(countryData, pop)
-   // console.log(olympicsData)
+    console.log(mappings)
 
 
 
@@ -23,7 +23,7 @@ loadData().then(data => {
         console.log(yearAggregate)
 
          //console.log(reverseMappings)
-       let map = new WorldMap(yearAggregate, mappings)
+       let map = new WorldMap(yearAggregate, mappings, '2012')
 
 
        map.drawMap(mapData);
@@ -44,8 +44,8 @@ function getMappings(countryData, data) {
         let countryIdMap = {};
         let countryNameMap = {};
         let reverseCountryIdMap = {};
-        let reverserCountryNameMap = {};
         let countryIdToName = {};
+        let regionMap = {}
         for (let i = 0; i < countryData.length; i++) {
 
             let discrepent = true;
@@ -55,27 +55,30 @@ function getMappings(countryData, data) {
                 if ((countryData[i]['Code'] === data[j]['geo'].toUpperCase())) {
                     countryIdMap[countryData[i]['Code']] = data[j]['geo'].toUpperCase();
                     reverseCountryIdMap[data[j]['geo'].toUpperCase()] = countryData[i]['Code'];
+                    regionMap[countryData[i]['Code']]  = data[j]['region']
                     discrepent = false;
+
                     break;
                 }
                 else if ((countryData[i]['Country'].toUpperCase() === data[j]['country'].toUpperCase())) {
                     countryNameMap[countryData[i]['Country']] = data[j]['geo'].toUpperCase()
-                    reverserCountryNameMap[data[j]['geo'].toUpperCase()] = countryData[i]['Country'];
+                    reverseCountryIdMap[data[j]['geo'].toUpperCase()] = countryData[i]['Code'];
+                    regionMap[countryData[i]['Code']]  = data[j]['region']
+
                     discrepent = false;
                 }
             }
 
         }
-        let val = {
+        return {
             countryIdMap : countryIdMap,
             countryNameMap: countryNameMap,
             reverseCountryIdMap: reverseCountryIdMap,
-            reverserCountryNameMap: reverserCountryNameMap,
-            countryIdToName: countryIdToName
+            countryIdToName: countryIdToName,
+            regionMap: regionMap
 
         }
-        self.mappings = Object.assign({}, val)
-    return self.mappings;
+
 }
 
 
@@ -161,6 +164,7 @@ async function loadData() {
         'olympicsData': olympicsData,
         'countryData': countryData,
         'pop': pop,
+
 
     };
 }
