@@ -1,41 +1,16 @@
 loadData().then(data => {
-
-    this.activeCountry = null;
-    this.activeYear = '2012';
     let self = this;
     let olympicsData = data['olympicsData'];
     let countryData = data['countryData'];
     let pop = data['pop'];
 
     let mappings =  getMappings(countryData, pop)
-    console.log(mappings)
-
-
-
-
-
-    //// Creates the view objects
-    //const worldMap = new Map(data, updateCountry);
-
     d3.json('data/world.json').then(mapData => {
-        console.log(mapData)
-        let yearAggregate = aggregate(olympicsData, "Year", "Country")
-        console.log(yearAggregate)
-
-         //console.log(reverseMappings)
-       let map = new WorldMap(yearAggregate, mappings, '2012')
-
-
-       map.drawMap(mapData);
-
+        let yearAggregate = aggregate(olympicsData, "Year", "Country");
+        let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
+        let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
+        map.drawMap(mapData);
     });
-
-
-
-
-
-
-
 });
 
 function getMappings(countryData, data) {
@@ -57,18 +32,15 @@ function getMappings(countryData, data) {
                     reverseCountryIdMap[data[j]['geo'].toUpperCase()] = countryData[i]['Code'];
                     regionMap[countryData[i]['Code']]  = data[j]['region']
                     discrepent = false;
-
                     break;
                 }
                 else if ((countryData[i]['Country'].toUpperCase() === data[j]['country'].toUpperCase())) {
                     countryNameMap[countryData[i]['Country']] = data[j]['geo'].toUpperCase()
                     reverseCountryIdMap[data[j]['geo'].toUpperCase()] = countryData[i]['Code'];
                     regionMap[countryData[i]['Code']]  = data[j]['region']
-
                     discrepent = false;
                 }
             }
-
         }
         return {
             countryIdMap : countryIdMap,
@@ -78,65 +50,7 @@ function getMappings(countryData, data) {
             regionMap: regionMap
 
         }
-
-}
-
-
-
-/*
-function init() {
-    initMap();
-}
-
-function initMap() {
-    let countryData = loadFile()
-    console.log(olympicsData)
-    let yearAggregate = {}
-    let self = this
-
-
-
-
-
-
-    d3.csv().then(countries => {
-
-        d3.csv().then(data => {
-          //  console.log(data)
-            olympicsData = data
-            countryData = countries
-            yearAggregate = aggregate(olympicsData, "Year", 'Country')
-            d3.json('data/world.json').then(mapData => {
-
-                setMapIds(countryData, olympicsData)
-                //console.log(olympicsData)
-                let reverseMappings = {};
-                for(let i = 0; i < olympicsData.length; i++) {
-                    reverseMappings[olympicsData[i]['mapId']] = olympicsData[i]['Country']
-                }
-             //  console.log(reverseMappings)
-                let map = new Map(yearAggregate, reverseMappings)
-
-
-                map.drawMap(mapData, "2012");
-
-
-            });
-
-
-        });
-
-
-    });*/
-
-
-
-
-
-
-
-
-
+    }
 
 async function loadFile(file) {
     let data = await d3.csv(file).then(d => {
@@ -159,13 +73,10 @@ async function loadData() {
     let olympicsData = await loadFile("data/summer.csv");
     let pop = await loadFile('data/pop.csv');
 
-    //return [pop, gdp, tfr, cmu, life];
     return {
         'olympicsData': olympicsData,
         'countryData': countryData,
         'pop': pop,
-
-
     };
 }
 
@@ -177,7 +88,6 @@ function aggregate(data, param, groupParam) {
         if(!groupParamValue) {
             continue;
         }
-
 
         if((!aggregatedData.hasOwnProperty(paramValue))) {
             aggregatedData[paramValue] = {}
@@ -198,7 +108,6 @@ function aggregate(data, param, groupParam) {
                 aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
             }
         }
-
         if(groupParamValue && !aggregatedData[paramValue].hasOwnProperty(groupParamValue)) {
             aggregatedData[paramValue][groupParamValue] = {}
             aggregatedData[paramValue][groupParamValue]['medals'] = {}
@@ -206,8 +115,6 @@ function aggregate(data, param, groupParam) {
             aggregatedData[paramValue][groupParamValue]['medals']['silver'] = 0;
             aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
         }
-
-
         if(data[i]['Medal'] === 'Gold') {
             if(!groupParamValue) {
                 if(!aggregatedData[paramValue]['medals']) {

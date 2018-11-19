@@ -68,7 +68,7 @@ path.hidden {
     height: 450px;
 }
 
-#scatter-plot {
+#olympic-analysis {
     height: 730px;
 }
 
@@ -155,7 +155,7 @@ path.hidden {
 }
 
 .view {
-    width: 850px;
+    width: 750px;
     /*margin: auto;*/
     padding: 5px;
     display: inline-block;
@@ -277,7 +277,7 @@ div.dropdown-wrapper {
 
 .slider {
     -webkit-appearance: none;
-    width: 725px;
+    width: 610px;
     height: 15px;
     border-radius: 5px;
     background: #d3d3d3;
@@ -324,6 +324,7 @@ div.dropdown-wrapper {
     float: left;
     width: 750px;
     margin-left: 50px;
+    margin-top: 20px;
 }
 
 
