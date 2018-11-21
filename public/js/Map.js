@@ -98,6 +98,111 @@ class WorldMap {
         this.drawYearBar()
         this.updateMap();
 
+       // _this.drawLegend();
+        this.drawSunburst(1896)
+    }
+
+    drawSunburst(year) {
+        let self = this
+        let allMedals = self.countryData[year]
+        console.log(Object.entries(allMedals))
+        let allMedalsArr = Object.entries(allMedals)
+        allMedalsArr.sort((a, b) => {
+            let medals1 = a[1]["medals"]
+            let medals2 = b[1]["medals"]
+            let m1 = medals1["gold"]+medals1["silver"]+medals1["bronze"]
+            let m2 = medals2["gold"]+medals2["silver"]+medals2["bronze"]
+            let res = m2 - m1
+            res = res == 0 ? medals2["gold"] - medals1["gold"] : res
+            res = res == 0 ? medals2["silver"] - medals1["silver"] : res
+            return m2 - m1;
+        }
+        )
+        console.log(allMedalsArr)
+        let root = {name: "Top 10", children: []}
+
+        for (let i = 0; i < allMedalsArr.length && i < 10; i++) {
+            let elem = allMedalsArr[i]
+            let obj = {
+                name: elem[0],
+                children: [
+                    {name: "gold", size: elem[1]["medals"]["gold"]},
+                    {name: "silver", size: elem[1]["medals"]["silver"]},
+                    {name: "bronze", size: elem[1]["medals"]["bronze"]}
+                ]
+            };
+            root.children.push(obj)
+        }
+
+        console.log(root)
+
+        // generate sunburst
+
+        var width = 960,
+            height = 700,
+            radius = (Math.min(width, height) / 2) - 10;
+
+        var formatNumber = d3.format(",d");
+
+        var x = d3.scaleLinear()
+            .range([0, 2 * Math.PI]);
+
+        var y = d3.scaleSqrt()
+            .range([0, radius]);
+
+        var color = d3.scaleOrdinal().range([
+            "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"
+        ]);
+
+
+        var partition = d3.partition();
+
+        var arc = d3.arc()
+            .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
+            .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
+            .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
+            .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
+
+
+        var svg = d3.select("#sunburstView").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
+
+
+        let click = function(d) {
+            svg.transition()
+                .duration(750)
+                .tween("scale", function() {
+                    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                        yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                        yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
+                    return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
+                })
+                .selectAll("path")
+                .attrTween("d", function(d) { return function() { return arc(d); }; });
+        }
+
+
+            root = d3.hierarchy(root);
+            root.sum(function(d) { return d.size; });
+            svg.selectAll("path")
+                .data(partition(root).descendants())
+                .enter().append("path")
+                .attr("d", arc)
+                .style("fill", function(d) {
+                    while(d.depth > 1) d = d.parent;
+                    if(d.depth == 0) return "lightgray";
+                    return color(d.value);
+                })
+                .on("click", click)
+                .append("title")
+                .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
+
+
+
+        d3.select(self.frameElement).style("height", height + "px");
         // _this.drawLegend();
     }
 
