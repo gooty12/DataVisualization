@@ -99,13 +99,15 @@ class WorldMap {
         this.updateMap();
 
        // _this.drawLegend();
-        this.drawSunburst(1896)
+        this.drawSunburst(2008)
     }
 
     drawSunburst(year) {
+        console.log("SUNBURST")
         let self = this
-        let allMedals = self.countryData[year]
-        console.log(Object.entries(allMedals))
+        let allMedals = this.yearAggregate[year]
+        //console.log(this.yearAggregate)
+        //console.log(Object.entries(allMedals))
         let allMedalsArr = Object.entries(allMedals)
         allMedalsArr.sort((a, b) => {
             let medals1 = a[1]["medals"]
