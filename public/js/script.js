@@ -8,6 +8,7 @@ loadData().then(data => {
     d3.json('data/world.json').then(mapData => {
         let yearAggregate = aggregate(olympicsData, "Year", "Country");
         let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
+        console.log(mappings)
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
         map.drawMap(mapData);
     });

@@ -13,7 +13,7 @@ class CountryData {
 
 class WorldMap {
     constructor(yearAggregate, countryAggregate, mappings, defaultYear) {
-        this.margin = {top: 30, right: 20, bottom: 30, left: 30};
+        this.margin = {top: 50, right: 50, bottom: 30, left: 70};
         this.yearAggregate = yearAggregate;
         this.countryAggregate = countryAggregate;
         this.mappings = mappings;
@@ -27,10 +27,9 @@ class WorldMap {
         this.svgWidth = this.svgBounds.width/3 - this.margin.left - this.margin.right;
         this.svgHeight = this.svgBounds.height/3 - this.margin.top - this.margin.bottom;
         this.activeCountry = "";
+        this.lineChartWidth = this.svgBounds.width - this.margin.left - this.margin.right;
 
         this.infoBoxSvg = olympicAnalysisDiv.append('div').attr('id', 'infobox')
-        //add the svg to the div
-
     };
 
     drawMap(world) {
@@ -74,6 +73,8 @@ class WorldMap {
                 self.activeCountry = d.countryId;
                 self.updateLineChart('total')
             })
+            .append('title').html((d => self.tooltipRender(d.countryId)))
+
 
         this.mapSvg.append("path")
             .datum({type: "Sphere"})
@@ -334,11 +335,16 @@ class WorldMap {
 
         let newRect = rect.enter().append("rect");
         rect.exit().remove();
-        rect = newRect.merge(rect).attr("width", d => 30)
+        rect = newRect.merge(rect).attr("width", d => 20)
             .attr("height", d=> (this.svgHeight - yScale(d.medals.totalMedals)))
             .attr("x", d => xScale(d.country))
-            .attr("y", (d, i) => yScale(d.medals.totalMedals));
-        rect.attr("id", d=>d.country + '_medals_count');
+            .attr("y", (d, i) => yScale(d.medals.totalMedals))
+            .attr("id", d=>d.country + '_medals_count')
+            .on('click', function (d) {
+                self.activeCountry = d.country;
+                self.updateLineChart('total')
+            })
+            .append('title').html((d => self.tooltipRender(d.country)));
 
         svg.append("text")
             .attr("x", (this.svgWidth / 2))
@@ -347,6 +353,23 @@ class WorldMap {
             .style("font-size", "16px")
             .style("text-decoration", "underline")
             .text("Top performers");
+
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (this.svgWidth/2) + " ," +
+                (this.svgHeight + this.margin.top) + ")")
+            .attr('id', 'xLabelLine')
+            .style("text-anchor", "middle")
+            .text("Countries");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left + 20)
+            .attr("x",0 - (this.svgHeight / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Total medals");
+
     }
 
 
@@ -442,11 +465,15 @@ class WorldMap {
 
             let newRect = rect.enter().append("rect");
             rect.exit().remove();
-            rect = newRect.merge(rect).attr("width", d => 30)
+            rect = newRect.merge(rect).attr("width", d => 20)
                 .attr("height", d=> (this.svgHeight - yScale(d.improvement)))
                 .attr("x", d => xScale(d.country))
-                .attr("y", (d, i) => yScale(d.improvement));
-            rect.attr("id", d=>d.country + '_yoy_improvement');
+                .attr("y", (d, i) => yScale(d.improvement))
+                .attr("id", d=>d.country + '_yoy_improvement')
+                .on('click', function (d) {
+                    self.activeCountry = d.country;
+                    self.updateLineChart('total')
+                });
 
             svg.append("text")
                 .attr("x", (this.svgWidth / 2))
@@ -455,6 +482,23 @@ class WorldMap {
                 .style("font-size", "16px")
                 .style("text-decoration", "underline")
                 .text("Top Gainers");
+
+            svg.append("text")
+                .attr("transform",
+                    "translate(" + (this.svgWidth/2) + " ," +
+                    (this.svgHeight + this.margin.top) + ")")
+                .attr('id', 'xLabelLine')
+                .style("text-anchor", "middle")
+                .text("Countries");
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - this.margin.left + 20)
+                .attr("x",0 - (this.svgHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("YoY Improvement (%)");
+
 
             let maxYoYDec = d3.max(yoyDegradation, d => d.degradation)
 
@@ -476,11 +520,15 @@ class WorldMap {
 
             newRect = rect.enter().append("rect");
             rect.exit().remove();
-            rect = newRect.merge(rect).attr("width", d => 30)
+            rect = newRect.merge(rect).attr("width", d => 20)
                 .attr("height", d=> (this.svgHeight - yScale(d.degradation)))
                 .attr("x", d => xScale(d.country))
-                .attr("y", (d, i) => yScale(d.degradation));
-            rect.attr("id", d=>d.country + '_yoy_degradation');
+                .attr("y", (d, i) => yScale(d.degradation))
+                .attr("id", d=>d.country + '_yoy_degradation')
+                .on('click', function (d) {
+                    self.activeCountry = d.country;
+                    self.updateLineChart('total')
+                });
 
             svg.append("text")
                 .attr("x", (this.svgWidth / 2))
@@ -489,6 +537,23 @@ class WorldMap {
                 .style("font-size", "16px")
                 .style("text-decoration", "underline")
                 .text("Top Losers");
+
+            svg.append("text")
+                .attr("transform",
+                    "translate(" + (this.svgWidth/2) + " ," +
+                    (this.svgHeight + this.margin.top) + ")")
+                .attr('id', 'xLabelLine')
+                .style("text-anchor", "middle")
+                .text("Countries");
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - this.margin.left + 20)
+                .attr("x",0 - (this.svgHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("YoY degradation (%)");
+
         }
 
     }
@@ -532,21 +597,21 @@ class WorldMap {
         }
 
         let svg = d3.select('#olympic-analysis').append('div').attr('id', 'countryDetails').append('svg')
-        svg = svg.attr("width", (3*this.svgWidth + this.margin.left + this.margin.right))
+        svg = svg.attr("width", this.lineChartWidth + this.margin.left + this.margin.right)
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
             .attr('id', 'countryChart');
 
         let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
-        let xScale = d3.scalePoint().range([0, 3*this.svgWidth]).domain(yearScale);
+        let xScale = d3.scalePoint().range([0, this.lineChartWidth]).domain(yearScale);
         let valueline = d3.line()
             .x(function(d) { return xScale(d.year); })
             .y(function(d) { return yScale(d.count); });
 
 
-        this.drawXAxis(svg, 3*this.svgWidth, this.svgHeight, yearScale)
-        this.drawYAxis(svg, 3*this.svgWidth, this.svgHeight,  [0, max])
+        this.drawXAxis(svg, this.lineChartWidth, this.svgHeight, yearScale)
+        this.drawYAxis(svg, this.lineChartWidth, this.svgHeight,  [0, max])
         svg.append("path")
             .datum(dataArray)
             .attr("class", "line")
@@ -559,6 +624,30 @@ class WorldMap {
             .on('change', function () {
                 self.updateLineChart(this.value)
             })
+
+        svg.append("text")
+            .attr("x", (this.lineChartWidth/2))
+            .attr("y", 0 - (this.margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text(this.mappings['countryIdToName'][this.activeCountry] + ' performance chart');
+
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (this.lineChartWidth/2) + " ," +
+                (this.svgHeight + this.margin.top) + ")")
+            .attr('id', 'xLabelLine')
+            .style("text-anchor", "middle")
+            .text("Years");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left + 20)
+            .attr("x",0 - (this.svgHeight / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Value");
 
         let options = select
             .selectAll('option')
@@ -577,5 +666,18 @@ class WorldMap {
             let r = info_box.append('div').text(infoObjects[obj].indicator_name + ": ").classed("stat-text",true);
             r.append('span').text(infoObjects[obj].value).classed("stat-value",true);
         }*/
+    }
+
+    tooltipRender(country) {
+        if(!this.yearAggregate[this.year][country] || !this.yearAggregate[this.year][country]['medals']) {
+            return;
+        }
+        let data = this.yearAggregate[this.year][country]['medals'];
+
+
+        let text = "<h2>Gold Medals: " + data['gold'] + "</h2><br>";
+        text += "<h2>Silver Medals: " + data['silver'] + "</h2><br>";
+        text += "<h2>Bronze Medals: " + data['bronze'] + "</h2>";
+        return text;
     }
 }
