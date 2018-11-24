@@ -13,7 +13,7 @@ class CountryData {
 
 class WorldMap {
     constructor(yearAggregate, countryAggregate, mappings, defaultYear) {
-        this.margin = {top: 50, right: 50, bottom: 30, left: 70};
+        this.margin = {top: 50, right: 30, bottom: 30, left: 70};
         this.yearAggregate = yearAggregate;
         this.countryAggregate = countryAggregate;
         this.mappings = mappings;
@@ -260,16 +260,18 @@ class WorldMap {
         }
         let countries = Object.keys(this.yearAggregate[this.year])
         for (let i = 0; i < countries.length; i++) {
-            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
+            let total = this.yearAggregate[this.year][countries[i]]['medals']['total'];
             if (total > max) {
                 max = total;
             }
         }
         this.drawMedalsCountBarChart()
         this.drawYoYBarCharts();
+        //
+         this.drawRegionsBarChart();
         let color_scale = d3.scaleLinear().domain([0, max]).range(['yellow', 'red']);
         for (let i = 0; i < countries.length; i++) {
-            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
+            let total = this.yearAggregate[this.year][countries[i]]['medals']['total'];
             d3.select('#' + countries[i]).attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_medals_count').attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_yoy_improvement').attr('fill', color_scale(total));
@@ -277,11 +279,13 @@ class WorldMap {
 
         }
 
+
     }
 
     clearHighlight() {
         d3.selectAll('.country').attr('fill', '#d9d9d9');
         d3.select('#olympic-analysis').selectAll('*').remove()
+
     }
 
     drawMedalsCountBarChart() {
@@ -291,7 +295,7 @@ class WorldMap {
         let max = 0;
 
         for (let i = 0; i < countries.length; i++) {
-            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
+            let total = this.yearAggregate[this.year][countries[i]]['medals']['total'];
             if (total > max) {
                 max = total;
             }
@@ -299,8 +303,8 @@ class WorldMap {
 
 
         countries.sort(function (x, y) {
-            let totalX = self.yearAggregate[self.year][x]['medals']['gold'] + self.yearAggregate[self.year][x]['medals']['bronze'] + self.yearAggregate[self.year][x]['medals']['silver'];
-            let totalY = self.yearAggregate[self.year][y]['medals']['gold'] + self.yearAggregate[self.year][y]['medals']['bronze'] + self.yearAggregate[self.year][y]['medals']['silver'];
+            let totalX = self.yearAggregate[self.year][x]['medals']['total'];
+            let totalY = self.yearAggregate[self.year][y]['medals']['total'];
             medalsObj[x] = {};
             medalsObj[y] = {};
             medalsObj[x]['totalMedals'] = totalX;
@@ -372,7 +376,89 @@ class WorldMap {
 
     }
 
+    drawRegionsBarChart() {
+       let self = this;
 
+        let medalsRegions = []
+        let medalsRegionsObj = {}
+        let max = 0;
+
+        for (let key in this.yearAggregate[this.year]) {
+            let count = 0;
+            if(!this.mappings['regionMap'][key]) {
+               continue;
+            }
+            if(!medalsRegionsObj[this.mappings['regionMap'][key]]) {
+                count += this.yearAggregate[this.year][key]['medals']['total'];
+            }
+            else {
+                count = medalsRegionsObj[this.mappings['regionMap'][key]];
+                count += this.yearAggregate[this.year][key]['medals']['total'];
+            }
+            medalsRegionsObj[this.mappings['regionMap'][key]]  = count;
+            if (count > max) {
+                max = count;
+            }
+        }
+        let regionsScale = [];
+        for(let key in medalsRegionsObj) {
+            medalsRegions.push({
+                region: key,
+                count: medalsRegionsObj[key]
+            })
+            regionsScale.push(key)
+        }
+        medalsRegions.sort(function (x, y) {
+            return y.count - x.count;
+        })
+        let svg = d3.select('#olympic-analysis').append('div').attr('id', 'medalCountsRegionSection').attr('class', 'analysis-bars').append('svg')
+        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .append('g')
+            .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+            .attr('id', 'medalCounts')
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(regionsScale);
+        let color_scale = d3.scaleLinear().domain([0, max]).range(['yellow', 'red']);
+
+
+
+        this.drawXAxis(svg, this.svgWidth, this.svgHeight, regionsScale)
+        this.drawYAxis(svg, this.sgWidth, this.svgHeight,  [0, max])
+        let rect = svg.selectAll("rect").data(medalsRegions);
+
+        let newRect = rect.enter().append("rect");
+        rect.exit().remove();
+        rect = newRect.merge(rect).attr("width", d => 20)
+            .attr("height", d=> (this.svgHeight - yScale(d.count)))
+            .attr("x", d => xScale(d.region))
+            .attr("y", (d, i) => yScale(d.count))
+            .attr("id", d=>d.region + '_medals_count')
+            .attr('fill',d => color_scale(d.count))
+        svg.append("text")
+            .attr("x", (this.svgWidth / 2))
+            .attr("y", 0 - (this.margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Top performers(Regions)");
+
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (this.svgWidth/2) + " ," +
+                (this.svgHeight + this.margin.top) + ")")
+            .attr('id', 'xLabelLine')
+            .style("text-anchor", "middle")
+            .text("Regions");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left + 20)
+            .attr("x",0 - (this.svgHeight / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Total medals");
+    }
 
     drawYoYBarCharts() {
         let self = this;
@@ -398,13 +484,13 @@ class WorldMap {
                 let yearString = year + '';
                 let prevX = 0;
                 let prevY = 0;
-                let currX = self.yearAggregate[self.year][x]['medals']['gold'] + self.yearAggregate[self.year][x]['medals']['bronze'] + self.yearAggregate[self.year][x]['medals']['silver'];
-                let currY = self.yearAggregate[self.year][y]['medals']['gold'] + self.yearAggregate[self.year][y]['medals']['bronze'] + self.yearAggregate[self.year][y]['medals']['silver'];
+                let currX = self.yearAggregate[self.year][x]['medals']['total']
+                let currY = self.yearAggregate[self.year][y]['medals']['total']
                 if(prevData[x]) {
-                    prevX = prevData[x]['medals']['gold'] + prevData[x]['medals']['bronze'] + prevData[x]['medals']['silver'];
+                    prevX = prevData[x]['medals']['total'];
                 }
                 if(prevData[y]) {
-                    prevY = prevData[y]['medals']['gold'] + prevData[y]['medals']['bronze'] + prevData[y]['medals']['silver'];
+                    prevY = prevData[y]['medals']['total'];
                 }
                 yoyObj[x] = {}
                 yoyObj[y] = {}
@@ -560,7 +646,7 @@ class WorldMap {
 
     updateLineChart(param) {
         let self = this;
-        d3.select('#olympic-analysis').select('#countryDetails').remove();
+        d3.select('#country-detail').select('#countryDetails').remove();
         let data = this.countryAggregate[this.activeCountry]
         if(!data) {
             return;
@@ -596,7 +682,7 @@ class WorldMap {
             year += 4;
         }
 
-        let svg = d3.select('#olympic-analysis').append('div').attr('id', 'countryDetails').append('svg')
+        let svg = d3.select('#country-detail').append('div').attr('id', 'countryDetails').append('svg')
         svg = svg.attr("width", this.lineChartWidth + this.margin.left + this.margin.right)
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
             .append('g')
@@ -631,7 +717,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text(this.mappings['countryIdToName'][this.activeCountry] + ' performance chart');
+            .text(this.getText());
 
         svg.append("text")
             .attr("transform",
@@ -647,13 +733,26 @@ class WorldMap {
             .attr("x",0 - (this.svgHeight / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Value");
+            .text("Medals");
 
         let options = select
             .selectAll('option')
             .data(dropDownData).enter()
             .append('option')
             .text(function (d) { return d; });
+
+        svg.selectAll(".dot")
+            .data(dataArray)
+            .enter().append("circle") // Uses the enter().append() method
+            .attr("class", "dot") // Assign a class for styling
+            .attr("cx", function(d, i) { return xScale(d.year) })
+            .attr("cy", function(d) { return yScale(d.count) })
+            .attr("r", 5);
+    }
+
+    getText() {
+        return this.mappings['countryIdToName'][this.activeCountry] ? this.mappings['countryIdToName'][this.activeCountry] + ' performance chart' : 'performance chart';
+
     }
 
     drawInfoBox() {

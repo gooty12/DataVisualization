@@ -7,6 +7,7 @@ loadData().then(data => {
     let mappings =  getMappings(countryData, pop)
     d3.json('data/world.json').then(mapData => {
         let yearAggregate = aggregate(olympicsData, "Year", "Country");
+        console.log(yearAggregate)
         let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
         console.log(mappings)
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
@@ -151,13 +152,30 @@ function aggregate(data, param, groupParam) {
             if(!groupParamValue) {
                 aggregatedData[paramValue]['medals']['bronze']++
                 aggregatedData[paramValue]['medals']['total']++
-
             }
             else{
                 aggregatedData[paramValue][groupParamValue]['medals']['bronze']++
                 aggregatedData[paramValue][groupParamValue]['medals']['total']++
 
             }
+        }
+
+        //Year,City,Sport,Discipline,Athlete,Country,Gender,Event,Medal
+        if(groupParamValue) {
+            aggregatedData[paramValue][groupParamValue]['City'] = data[i]['City']
+            aggregatedData[paramValue][groupParamValue]['Sport'] = data[i]['Sport']
+            aggregatedData[paramValue][groupParamValue]['Discipline'] = data[i]['Discipline']
+            aggregatedData[paramValue][groupParamValue]['Athlete'] = data[i]['Athlete']
+            aggregatedData[paramValue][groupParamValue]['Gender'] = data[i]['Gender']
+            aggregatedData[paramValue][groupParamValue]['Event'] = data[i]['Event']
+        }
+        else {
+            aggregatedData[paramValue]['City'] = data[i]['City']
+            aggregatedData[paramValue]['Sport'] = data[i]['Sport']
+            aggregatedData[paramValue]['Discipline'] = data[i]['Discipline']
+            aggregatedData[paramValue]['Athlete'] = data[i]['Athlete']
+            aggregatedData[paramValue]['Gender'] = data[i]['Gender']
+            aggregatedData[paramValue]['Event'] = data[i]['Event']
         }
     }
     return aggregatedData;
