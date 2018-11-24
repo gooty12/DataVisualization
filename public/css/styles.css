@@ -420,3 +420,25 @@ i.europe {
 path {
     stroke: #fff;
 }
+
+#medalCountsSection {
+    display: inline-block;
+}
+
+.analysis-bars {
+    display: inline-block;
+    width: 33%;
+}
+
+.line {
+    fill: none;
+    stroke: black;
+    stroke-width: 2px;
+}
+
+#medalOptions{
+    position:absolute;
+    top:10px;
+    left:10px;
+}
+

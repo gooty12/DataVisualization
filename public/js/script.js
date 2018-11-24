@@ -96,6 +96,8 @@ function aggregate(data, param, groupParam) {
                 aggregatedData[paramValue]['medals']['gold'] = 0;
                 aggregatedData[paramValue]['medals']['silver'] = 0;
                 aggregatedData[paramValue]['medals']['bronze'] = 0;
+                aggregatedData[paramValue]['medals']['total'] = 0;
+
             }
             else {
                 if(!aggregatedData[paramValue].hasOwnProperty(groupParamValue)) {
@@ -106,6 +108,8 @@ function aggregate(data, param, groupParam) {
                 aggregatedData[paramValue][groupParamValue]['medals']['gold'] = 0;
                 aggregatedData[paramValue][groupParamValue]['medals']['silver'] = 0;
                 aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
+                aggregatedData[paramValue][groupParamValue]['medals']['total'] = 0;
+
             }
         }
         if(groupParamValue && !aggregatedData[paramValue].hasOwnProperty(groupParamValue)) {
@@ -114,35 +118,44 @@ function aggregate(data, param, groupParam) {
             aggregatedData[paramValue][groupParamValue]['medals']['gold'] = 0;
             aggregatedData[paramValue][groupParamValue]['medals']['silver'] = 0;
             aggregatedData[paramValue][groupParamValue]['medals']['bronze'] = 0;
+            aggregatedData[paramValue][groupParamValue]['medals']['total'] = 0;
+
         }
         if(data[i]['Medal'] === 'Gold') {
             if(!groupParamValue) {
-                if(!aggregatedData[paramValue]['medals']) {
-                    let x = 0;
-                }
+
                 aggregatedData[paramValue]['medals']['gold']++
+                aggregatedData[paramValue]['medals']['total']++
+
             }
             else{
-                if(!aggregatedData[paramValue]) {
-                    let x = 0;
-                }
                 aggregatedData[paramValue][groupParamValue]['medals']['gold']++
+                aggregatedData[paramValue][groupParamValue]['medals']['total']++
+
             }
         }
         else if(data[i]['Medal'] === 'Silver') {
             if(!groupParamValue) {
                 aggregatedData[paramValue]['medals']['silver']++
+                aggregatedData[paramValue]['medals']['total']++
+
             }
             else{
                 aggregatedData[paramValue][groupParamValue]['medals']['silver']++
+                aggregatedData[paramValue][groupParamValue]['medals']['total']++
+
             }
         }
         else if(data[i]['Medal'] === 'Bronze') {
             if(!groupParamValue) {
                 aggregatedData[paramValue]['medals']['bronze']++
+                aggregatedData[paramValue]['medals']['total']++
+
             }
             else{
                 aggregatedData[paramValue][groupParamValue]['medals']['bronze']++
+                aggregatedData[paramValue][groupParamValue]['medals']['total']++
+
             }
         }
     }

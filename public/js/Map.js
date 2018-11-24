@@ -13,7 +13,7 @@ class CountryData {
 
 class WorldMap {
     constructor(yearAggregate, countryAggregate, mappings, defaultYear) {
-        this.margin = {top: 30, right: 20, bottom: 30, left: 50};
+        this.margin = {top: 30, right: 20, bottom: 30, left: 30};
         this.yearAggregate = yearAggregate;
         this.countryAggregate = countryAggregate;
         this.mappings = mappings;
@@ -24,30 +24,17 @@ class WorldMap {
         let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true);
 
         this.svgBounds = olympicAnalysisDiv.node().getBoundingClientRect();
-        this.svgWidth = this.svgBounds.width - this.margin.right;
+        this.svgWidth = this.svgBounds.width/3 - this.margin.left - this.margin.right;
+        this.svgHeight = this.svgBounds.height/3 - this.margin.top - this.margin.bottom;
+        this.activeCountry = "";
 
-
+        this.infoBoxSvg = olympicAnalysisDiv.append('div').attr('id', 'infobox')
         //add the svg to the div
-        this.medalCountSvg = olympicAnalysisDiv.append("svg")
-            .attr("width",this.svgWidth)
-            .attr("height", 150)
-            .attr("transform", "translate(0 ,50)")
-
-        this.yoyImprovementSvg = olympicAnalysisDiv.append("svg")
-            .attr("width",this.svgWidth)
-            .attr("height", 150)
-            .attr("transform", "translate(0 ,50)")
-
-        this.yoyDecrementSvg = olympicAnalysisDiv.append("svg")
-            .attr("width",this.svgWidth)
-            .attr("height", 150)
-            .attr("transform", "translate(0 ,50)")
-
 
     };
 
     drawMap(world) {
-        let _this = this;
+        let self = this;
         let geojson = topojson.feature(world, world.objects.countries).features;
         let totalMedals = 0;
         let countryData = geojson.map(country => {
@@ -83,6 +70,10 @@ class WorldMap {
             .attr("id", d => d.countryId)
             .attr("class", d => d.region)
             .attr('class', 'country')
+            .on('click', function (d) {
+                self.activeCountry = d.countryId;
+                self.updateLineChart('total')
+            })
 
         this.mapSvg.append("path")
             .datum({type: "Sphere"})
@@ -95,6 +86,15 @@ class WorldMap {
             .datum(graticule)
             .classed("graticule", true)
             .attr("d", path);
+
+        let info_box = d3.select('#country-detail');
+        //info_box = info_box.append('div').classed("label", true).attr('id', 'infoBoxContainer');
+        let info_box_title = info_box.append('div');
+        /*info_box_title.append('text').text(infoObjects['population'].country).classed("i."+infoObjects['population'].region,false);
+        for(let obj in infoObjects){
+            let r = info_box.append('div').text(infoObjects[obj].indicator_name + ": ").classed("stat-text",true);
+            r.append('span').text(infoObjects[obj].value).classed("stat-value",true);
+        }*/
         this.drawYearBar()
         this.updateMap();
 
@@ -120,7 +120,6 @@ class WorldMap {
             return m2 - m1;
         }
         )
-        console.log(allMedalsArr)
         let root = {name: "Top 10", children: []}
 
         for (let i = 0; i < allMedalsArr.length && i < 10; i++) {
@@ -135,11 +134,7 @@ class WorldMap {
             };
             root.children.push(obj)
         }
-
-        console.log(root)
-
         // generate sunburst
-
         var width = 960,
             height = 700,
             radius = (Math.min(width, height) / 2) - 10;
@@ -240,26 +235,59 @@ class WorldMap {
         })
     }
 
-    updateMap() {
-        d3.selectAll('.country').attr('fill', '#d9d9d9');
-        let self = this;
+    drawXAxis(svg, width, height, scale) {
+        let x = d3.scalePoint().range([0, width]).domain(scale);
+        let xAxis = d3.axisBottom(x)
+        svg.append('g')
+            .attr('transform', 'translate(0,' + height + ')')
+            .classed('x axis', true)
+            .call(xAxis);
+    }
 
+    drawYAxis(svg, width, height,scale) {
+        let y = d3.scaleLinear().range([height, 0]).domain(scale);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+    }
+
+    updateMap() {
+        this.clearHighlight();
+        let self = this;
         let max = 0;
         if(!this.yearAggregate[this.year]) {
             return;
         }
         let countries = Object.keys(this.yearAggregate[this.year])
-        let medalsObj = {}
-        countries.sort(function (x, y) {
-            let totalX = self.yearAggregate[self.year][x]['medals']['gold'] + self.yearAggregate[self.year][x]['medals']['bronze'] + self.yearAggregate[self.year][x]['medals']['silver'];
-            let totalY = self.yearAggregate[self.year][y]['medals']['gold'] + self.yearAggregate[self.year][y]['medals']['bronze'] + self.yearAggregate[self.year][y]['medals']['silver'];
-            medalsObj[x] = {};
-            medalsObj[y] = {};
+        for (let i = 0; i < countries.length; i++) {
+            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
+            if (total > max) {
+                max = total;
+            }
+        }
+        this.drawMedalsCountBarChart()
+        this.drawYoYBarCharts();
+        let color_scale = d3.scaleLinear().domain([0, max]).range(['yellow', 'red']);
+        for (let i = 0; i < countries.length; i++) {
+            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
+            d3.select('#' + countries[i]).attr('fill', color_scale(total));
+            d3.select('#' + countries[i] + '_medals_count').attr('fill', color_scale(total));
+            d3.select('#' + countries[i] + '_yoy_improvement').attr('fill', color_scale(total));
+            d3.select('#' + countries[i] + '_yoy_degradation').attr('fill', color_scale(total));
 
-            medalsObj[x]['totalMedals'] = totalX;
-            medalsObj[y]['totalMedals'] = totalY;
-            return totalY - totalX;
-        })
+        }
+
+    }
+
+    clearHighlight() {
+        d3.selectAll('.country').attr('fill', '#d9d9d9');
+        d3.select('#olympic-analysis').selectAll('*').remove()
+    }
+
+    drawMedalsCountBarChart() {
+        let self = this;
+        let countries = Object.keys(this.yearAggregate[this.year])
+        let medalsObj = {}
+        let max = 0;
 
         for (let i = 0; i < countries.length; i++) {
             let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
@@ -267,6 +295,20 @@ class WorldMap {
                 max = total;
             }
         }
+
+
+        countries.sort(function (x, y) {
+            let totalX = self.yearAggregate[self.year][x]['medals']['gold'] + self.yearAggregate[self.year][x]['medals']['bronze'] + self.yearAggregate[self.year][x]['medals']['silver'];
+            let totalY = self.yearAggregate[self.year][y]['medals']['gold'] + self.yearAggregate[self.year][y]['medals']['bronze'] + self.yearAggregate[self.year][y]['medals']['silver'];
+            medalsObj[x] = {};
+            medalsObj[y] = {};
+            medalsObj[x]['totalMedals'] = totalX;
+            medalsObj[y]['totalMedals'] = totalY;
+            return totalY - totalX;
+        })
+        let countriesScale = [];
+
+
         let medalsData = [];
         for(let i = 0; i < 5; i++) {
             let countryMedalCount = {
@@ -274,25 +316,53 @@ class WorldMap {
                 medals: medalsObj[countries[i]]
             }
             medalsData.push(countryMedalCount)
+            countriesScale.push(countries[i]);
         }
-        console.log(medalsData)
+        let svg = d3.select('#olympic-analysis').append('div').attr('id', 'medalCountsSection').attr('class', 'analysis-bars').append('svg')
+        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .append('g')
+            .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+            .attr('id', 'medalCounts')
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
 
-        let xScale = d3.scaleLinear().domain([0, max]).range([this.margin.left, this.svgWidth - this.margin.right - 200]);
-        let rect = this.medalCountSvg.selectAll("rect").data(medalsData);
+
+        this.drawXAxis(svg, this.svgWidth, this.svgHeight, countriesScale)
+        this.drawYAxis(svg, this.sgWidth, this.svgHeight,  [0, max])
+        let rect = svg.selectAll("rect").data(medalsData);
 
         let newRect = rect.enter().append("rect");
-
-
-
         rect.exit().remove();
-        rect = newRect.merge(rect).attr("width", d => xScale(d.medals.totalMedals))
-            .attr("height", 20)
-            .attr("x", 0)
-            .attr("y", (d, i) => 25*i);
+        rect = newRect.merge(rect).attr("width", d => 30)
+            .attr("height", d=> (this.svgHeight - yScale(d.medals.totalMedals)))
+            .attr("x", d => xScale(d.country))
+            .attr("y", (d, i) => yScale(d.medals.totalMedals));
         rect.attr("id", d=>d.country + '_medals_count');
+
+        svg.append("text")
+            .attr("x", (this.svgWidth / 2))
+            .attr("y", 0 - (this.margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Top performers");
+    }
+
+
+
+    drawYoYBarCharts() {
+        let self = this;
+        let countries = Object.keys(this.yearAggregate[this.year])
 
         let year = parseInt(this.year) - 4;
         while(year >= 1896 && !this.yearAggregate[year]) {
+            if(year == 1948) {
+                year -= 8;
+            }
+            else if(year == 1944) {
+
+            }
             year -= 4;
         }
         if(year >= 1896) {
@@ -322,26 +392,30 @@ class WorldMap {
                 return yval - xval;
             });
             let count = 0;
+            let countriesScaleInc = [];
 
             for(let i = 0; i < 5; i++) {
                 let obj = {
                     'country': countries[i],
-                    'improvement': yoyObj[countries[i]]['yoyImprovement']
+                    'improvement': yoyObj[countries[i]]['yoyImprovement']*100
                 }
                 yoyImprovement.push(obj)
+                countriesScaleInc.push(countries[i])
             }
-            let maxYoYInc = d3.max(yoyImprovement, d => d.improvement)*100
+            let maxYoYInc = d3.max(yoyImprovement, d => d.improvement)
 
+            let countriesScaleDec = [];
 
             for(let i = countries.length - 1; i >= 0; i--) {
                 if(yoyObj[countries[i]]['yoyImprovement'] > -10000) {
                     let obj = {
                         'country': countries[i],
-                        'degradation': -1*yoyObj[countries[i]]['yoyImprovement']
+                        'degradation': -1*yoyObj[countries[i]]['yoyImprovement']*100
                     }
                     if(obj['degradation'] > 0) {
                         yoyDegradation.push(obj)
                         count++;
+                        countriesScaleDec.push(countries[i])
 
                     }
                     if(count == 5) {
@@ -351,63 +425,157 @@ class WorldMap {
                 }
             }
 
-            let maxYoYDec = d3.max(yoyDegradation, d => d.degradation)*100
+            let svg = d3.select('#olympic-analysis').append('div').attr('id', 'yoyImprovementSection').attr('class', 'analysis-bars').append('svg')
+            svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+                .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+                .append('g')
+                .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+                .attr('id', 'yoyImprovement');
+
+            let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, maxYoYInc]);
+            let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScaleInc);
 
 
-            let percentScaleInc = d3.scaleLinear().domain([0, maxYoYInc]).range([this.margin.left, this.svgWidth - this.margin.right - 200]);
-            let percentScaleDec = d3.scaleLinear().domain([0, maxYoYDec]).range([this.margin.left, this.svgWidth - this.margin.right - 200]);
+            this.drawXAxis(svg, this.svgWidth, this.svgHeight, countriesScaleInc)
+            this.drawYAxis(svg, this.svgWidth, this.svgHeight,  [0, maxYoYInc])
+            let rect = svg.selectAll("rect").data(yoyImprovement);
 
-            let yoyImprovementRect = this.yoyImprovementSvg.selectAll("rect").data(yoyImprovement);
-            let yoyDegradationRect = this.yoyDecrementSvg.selectAll("rect").data(yoyDegradation);
+            let newRect = rect.enter().append("rect");
+            rect.exit().remove();
+            rect = newRect.merge(rect).attr("width", d => 30)
+                .attr("height", d=> (this.svgHeight - yScale(d.improvement)))
+                .attr("x", d => xScale(d.country))
+                .attr("y", (d, i) => yScale(d.improvement));
+            rect.attr("id", d=>d.country + '_yoy_improvement');
 
-            let newRectYoyImprovement = yoyImprovementRect.enter().append("rect");
-            let newRectYoyDegradation = yoyDegradationRect.enter().append("rect");
+            svg.append("text")
+                .attr("x", (this.svgWidth / 2))
+                .attr("y", 0 - (this.margin.top / 2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Top Gainers");
+
+            let maxYoYDec = d3.max(yoyDegradation, d => d.degradation)
+
+            svg = d3.select('#olympic-analysis').append('div').attr('id', 'yoyDegradationSection').attr('class', 'analysis-bars')
+        .append('svg')
+            svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+                .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+                .append('g')
+                .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+                .attr('id', 'yoyDecrement')
+
+            yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, maxYoYDec]);
+            xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScaleDec);
 
 
-            yoyImprovementRect.exit().remove();
-            yoyDegradationRect.exit().remove();
+            this.drawXAxis(svg, this.svgWidth, this.svgHeight, countriesScaleDec)
+            this.drawYAxis(svg, this.svgWidth, this.svgHeight,  [0, maxYoYDec])
+            rect = svg.selectAll("rect").data(yoyDegradation);
 
-            yoyImprovementRect = newRectYoyImprovement.merge(yoyImprovementRect).attr("width", d => percentScaleInc(d.improvement*100))
-                .attr("height", 20)
-                .attr("x", 0)
-                .attr("y", (d, i) => 25*i)
-                .attr("id", d=>d.country + '_yoy_improvement');
+            newRect = rect.enter().append("rect");
+            rect.exit().remove();
+            rect = newRect.merge(rect).attr("width", d => 30)
+                .attr("height", d=> (this.svgHeight - yScale(d.degradation)))
+                .attr("x", d => xScale(d.country))
+                .attr("y", (d, i) => yScale(d.degradation));
+            rect.attr("id", d=>d.country + '_yoy_degradation');
 
-            yoyDegradationRect = newRectYoyDegradation.merge(yoyDegradationRect).attr("width", d => percentScaleDec(d.degradation*100))
-                .attr("height", 20)
-                .attr("x", 0)
-                .attr("y", (d, i) => 25*i)
-                .attr("id", d=>d.country + '_yoy_degradation');
+            svg.append("text")
+                .attr("x", (this.svgWidth / 2))
+                .attr("y", 0 - (this.margin.top / 2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Top Losers");
         }
-
-        let color_scale = d3.scaleLinear().domain([0, max]).range(['green', 'red']);
-        for (let i = 0; i < countries.length; i++) {
-            let total = this.yearAggregate[this.year][countries[i]]['medals']['gold'] + this.yearAggregate[this.year][countries[i]]['medals']['bronze'] + this.yearAggregate[this.year][countries[i]]['medals']['silver'];
-            d3.select('#' + countries[i]).attr('fill', color_scale(total));
-            d3.select('#' + countries[i] + '_medals_count').attr('fill', color_scale(total));
-            d3.select('#' + countries[i] + '_yoy_improvement').attr('fill', color_scale(total));
-            d3.select('#' + countries[i] + '_yoy_degradation').attr('fill', color_scale(total));
-
-
-        }
-
 
     }
 
-    tooltipRender(data) {
-        let text = "<h1>" + data['country'] + "</h1>";
-        text += "<h2> Region: " + data['region'] + "</h2>";
-        text += "<h2> Gold Medals: " + data['gold'] + "</h2>";
-        text += "<h2> Silver Medals: " + data['silver'] + "</h2>";
-        text += "<h2> Bronze Medals: " + data['bronze'] + "</h2>";
-        return text;
+    updateLineChart(param) {
+        let self = this;
+        d3.select('#olympic-analysis').select('#countryDetails').remove();
+        let data = this.countryAggregate[this.activeCountry]
+        if(!data) {
+            return;
+        }
+        let countryData = [];
+        let testObj
+        let yearScale = [];
+        let year = 1896;
+        let max = -1;
+        let dataArray = [];
+        while(year <= 2012) {
+            if(year != 1916 && year != 1940 && year != 1944) {
+                let yearString = year + ''
+                yearScale.push(yearString)
+                if(data[yearString]) {
+                    let count = data[yearString]['medals'][param]
+                    dataArray.push({
+                        year: yearString,
+                        count: count
+                        })
+                        if(count > max) {
+                           max = count;
+                        }
+                }
+                else {
+                    dataArray.push({
+                        year: yearString,
+                        count: 0
+                    })
+                }
+
+            }
+            year += 4;
+        }
+
+        let svg = d3.select('#olympic-analysis').append('div').attr('id', 'countryDetails').append('svg')
+        svg = svg.attr("width", (3*this.svgWidth + this.margin.left + this.margin.right))
+            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .append('g')
+            .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+            .attr('id', 'countryChart');
+
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let xScale = d3.scalePoint().range([0, 3*this.svgWidth]).domain(yearScale);
+        let valueline = d3.line()
+            .x(function(d) { return xScale(d.year); })
+            .y(function(d) { return yScale(d.count); });
+
+
+        this.drawXAxis(svg, 3*this.svgWidth, this.svgHeight, yearScale)
+        this.drawYAxis(svg, 3*this.svgWidth, this.svgHeight,  [0, max])
+        svg.append("path")
+            .datum(dataArray)
+            .attr("class", "line")
+            .attr("d", valueline);
+
+        let dropDownData = ["total", "gold", "silver", "bronze"];
+        let select = d3.select('#countryChart').append('select')
+            .attr('class','select')
+            .attr('id', 'medalOptions')
+            .on('change', function () {
+                self.updateLineChart(this.value)
+            })
+
+        let options = select
+            .selectAll('option')
+            .data(dropDownData).enter()
+            .append('option')
+            .text(function (d) { return d; });
     }
 
-
-
-
-
-
-
-
+    drawInfoBox() {
+        let info_box = d3.select('#country-detail');
+        info_box = info_box.append('div').classed("label", true).attr('id', 'infoBoxContainer');
+        let info_box_title = info_box.append('div');
+        //info_box_title.append('i').attr('class',infoObjects['population'].region).classed('fas fa-globe-asia',true);
+        //info_box_title.append('text').text(infoObjects['population'].country).classed("i."+infoObjects['population'].region,false);
+        /*for(let obj in infoObjects){
+            let r = info_box.append('div').text(infoObjects[obj].indicator_name + ": ").classed("stat-text",true);
+            r.append('span').text(infoObjects[obj].value).classed("stat-value",true);
+        }*/
+    }
 }
