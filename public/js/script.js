@@ -12,6 +12,8 @@ loadData().then(data => {
         console.log(mappings)
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
         map.drawMap(mapData);
+        let aggregateViews = new AggregateViews(yearAggregate, countryAggregate)
+        aggregateViews.drawHeatMap()
     });
 });
 

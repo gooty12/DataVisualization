@@ -416,9 +416,29 @@ i.europe {
 }
 
 
-
+/* Styling for sunburst */
 path {
     stroke: #fff;
+}
+
+/* Styling for heatmap */
+#heatmapView rect.bordered {
+    stroke: #E6E6E6;
+    stroke-width:2px;
+}
+
+#heatmapView  text.mono {
+    font-size: 9pt;
+    font-family: Consolas, courier;
+    fill: #aaa;
+}
+
+#heatmapView  text.axis-workweek {
+    fill: #000;
+}
+
+#heatmapView  text.axis-worktime {
+    fill: #000;
 }
 
 #medalCountsSection {
