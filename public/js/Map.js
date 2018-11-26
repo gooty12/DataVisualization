@@ -100,13 +100,14 @@ class WorldMap {
         this.updateMap();
 
        // _this.drawLegend();
-        this.drawSunburst(2008)
+        this.drawSunburst(2012)
     }
 
     drawSunburst(year) {
+        d3.select('#sunburstView').selectAll('*').remove();
         let self = this
         let allMedals = this.yearAggregate[year]
-        console.log(this.yearAggregate)
+        //console.log(allMedals)
         //console.log(Object.entries(allMedals))
         let allMedalsArr = Object.entries(allMedals)
         allMedalsArr.sort((a, b) => {
@@ -120,6 +121,7 @@ class WorldMap {
             return m2 - m1;
         }
         )
+        console.log(allMedalsArr)
         let root = {name: "Top 10", children: []}
 
         for (let i = 0; i < allMedalsArr.length && i < 10; i++) {
@@ -255,6 +257,8 @@ class WorldMap {
             sliderText.attr('x', yearScale(this.value));
             sliderText.text(this.value)
             self.updateMap()
+            self.drawSunburst(this.value)
+
         })
     }
 
