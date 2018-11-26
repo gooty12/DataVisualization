@@ -104,10 +104,9 @@ class WorldMap {
     }
 
     drawSunburst(year) {
-        console.log("SUNBURST")
         let self = this
         let allMedals = this.yearAggregate[year]
-        //console.log(this.yearAggregate)
+        console.log(this.yearAggregate)
         //console.log(Object.entries(allMedals))
         let allMedalsArr = Object.entries(allMedals)
         allMedalsArr.sort((a, b) => {
@@ -169,7 +168,47 @@ class WorldMap {
             .attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
 
 
-        let click = function(d) {
+        //console.log(partition(root).descendants());
+            root = d3.hierarchy(root);
+            root.sum(function(d) { return d.size; });
+            svg.selectAll("path")
+                .data(partition(root).descendants())
+                .enter().append("path")
+                .attr("d", arc)
+                .style("fill", function(d) {
+                    //while(d.depth > 1) d = d.parent;
+                    if(d.depth == 0) return "lightgray";
+                    if (d.depth == 1) return color(d.value);
+                    if (d.depth == 2) {
+                        if (d.data.name == "gold") return "gold";
+                        if (d.data.name == "bronze") return "#CD7F32";
+                        if (d.data.name == "silver") return "rgb(192,192,192)";
+                    }
+
+                })
+                .on("click", click)
+                .append("title")
+                .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
+
+        var text = svg.selectAll("text")
+            .data(root.descendants())
+            .enter()
+            .append("text")
+            .attr("fill", "black")
+            .attr("transform", function(d) { if (d.depth != 0)return "translate(" + arc.centroid(d) + ")"; })
+            .attr("dy", "5px")
+            .attr("font", "10px")
+            .attr("text-anchor", "middle")
+            .text(function(d) {
+                let name = d.data.name
+                name = name == "gold" ? "G" : name
+                name = name == "silver" ? "S" : name
+                name = name == "bronze" ? "B" : name
+                return name; });
+
+        var click = function(d) {
+            // fade out all text elements
+            text.transition().attr("opacity", 0);
             svg.transition()
                 .duration(750)
                 .tween("scale", function() {
@@ -181,23 +220,6 @@ class WorldMap {
                 .selectAll("path")
                 .attrTween("d", function(d) { return function() { return arc(d); }; });
         }
-
-
-            root = d3.hierarchy(root);
-            root.sum(function(d) { return d.size; });
-            svg.selectAll("path")
-                .data(partition(root).descendants())
-                .enter().append("path")
-                .attr("d", arc)
-                .style("fill", function(d) {
-                    while(d.depth > 1) d = d.parent;
-                    if(d.depth == 0) return "lightgray";
-                    return color(d.value);
-                })
-                .on("click", click)
-                .append("title")
-                .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
-
 
 
         d3.select(self.frameElement).style("height", height + "px");

@@ -1,0 +1,106 @@
+{
+  "name": "flare",
+  "children": [
+    {
+      "name": "analyqwdtics",
+      "children": [
+        {"name": "AggloqmerativeCluster", "size": 3938},
+        {"name": "CommuwdnityStructure", "size": 3812},
+        {"name": "HierasaxrchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]},
+
+    {
+      "name": "anaqwdlytics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HiersearchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analytawics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analytics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analyfastics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchcxicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analytics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analdadasgytics",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchicalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "ang",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunityStructure", "size": 3812},
+        {"name": "HierarchiccalCluster", "size": 6714},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "safg",
+      "children": [
+        {"name": "AgglomerativeCluster", "size": 3938},
+        {"name": "CommunitySdftructure", "size": 382},
+        {"name": "HierarchicalCluster", "size": 674},
+        {"name": "MergeEdge", "size": 743}
+      ]
+    },
+    {
+      "name": "analytics",
+      "children": [
+        {
+          "name": "AgglomevxrativeCluster",
+          "size": 3938
+        },
+        {
+          "name": "CommufgdfnityStructure",
+          "size": 3812
+        },
+        {
+          "name": "HierarchicalCluster",
+          "size": 6714
+        },
+        {
+          "name": "MergeEdge",
+          "size": 743
+        }
+      ]
+    } ]
+}
