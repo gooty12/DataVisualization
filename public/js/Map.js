@@ -119,9 +119,8 @@ class WorldMap {
             res = res == 0 ? medals2["gold"] - medals1["gold"] : res
             res = res == 0 ? medals2["silver"] - medals1["silver"] : res
             return m2 - m1;
-        }
-        )
-        console.log(allMedalsArr)
+        })
+        //console.log(allMedalsArr)
         let root = {name: "Top 10", children: []}
 
         for (let i = 0; i < allMedalsArr.length && i < 10; i++) {
@@ -295,14 +294,17 @@ class WorldMap {
         this.drawYoYBarCharts();
         //
          this.drawRegionsBarChart();
-        let color_scale = d3.scaleLinear().domain([0, max]).range(['yellow', 'red']);
+        this.drawSexRatioBarCharts();
+
+        let color_scale = d3.scaleLinear().domain([0, max]).range(['#e5f5f9', '#2ca25f']);
         for (let i = 0; i < countries.length; i++) {
             let total = this.yearAggregate[this.year][countries[i]]['medals']['total'];
             d3.select('#' + countries[i]).attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_medals_count').attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_yoy_improvement').attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_yoy_degradation').attr('fill', color_scale(total));
-
+            d3.select('#' + countries[i] + '_females_count').attr('fill', color_scale(total));
+            d3.select('#' + countries[i] + '_males_count').attr('fill', color_scale(total));
         }
 
 
@@ -402,6 +404,149 @@ class WorldMap {
 
     }
 
+    drawSexRatioBarCharts() {
+        let self = this;
+        let countriesArr = [];
+        let yearData = this.yearAggregate[this.year]
+        for(let property in yearData) {
+            let ratio = yearData[property]['Males'] == 0 || yearData[property]['Females'] == 0? 10000 : yearData[property]['Females']/ yearData[property]['Males'];
+            countriesArr.push({
+                'country': property,
+                'males': yearData[property]['Males'],
+                'females': yearData[property]['Females'],
+                'ratio': ratio
+            })
+        }
+
+       countriesArr =  countriesArr.filter(x => x['males'] && x['females']);
+        countriesArr.sort(function (x, y) {
+            return y['ratio']  - x['ratio'];
+        })
+        let max = d3.max(countriesArr, d => d.ratio)
+        let countriesScale = [];
+        let femaleRatio = [];
+        for(let i = 0; i < 5; i++) {
+            countriesScale.push(countriesArr[i].country)
+            femaleRatio.push(countriesArr[i])
+        }
+
+
+
+        let svg = d3.select('#olympic-analysis').append('div').attr('id', 'sexRatioMinContainer').attr('class', 'analysis-bars').append('svg')
+        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .append('g')
+            .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+            .attr('id', 'femalesCount')
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
+
+
+        this.drawXAxis(svg, this.svgWidth, this.svgHeight, countriesScale)
+        this.drawYAxis(svg, this.sgWidth, this.svgHeight,  [0, max])
+        let rect = svg.selectAll("rect").data(femaleRatio);
+
+        let newRect = rect.enter().append("rect");
+        rect.exit().remove();
+        rect = newRect.merge(rect).attr("width", d => 20)
+            .attr("height", d=> (this.svgHeight - yScale(d.ratio)))
+            .attr("x", d => xScale(d.country))
+            .attr("y", (d, i) => yScale(d.ratio))
+            .attr("id", d=>d.country + '_females_count')
+
+            //.append('title').html((d => self.tooltipRender(d.country)));
+
+        svg.append("text")
+            .attr("x", (this.svgWidth / 2))
+            .attr("y", 0 - (this.margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Top female participation");
+
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (this.svgWidth/2) + " ," +
+                (this.svgHeight + this.margin.top) + ")")
+            .attr('id', 'xLabelLine')
+            .style("text-anchor", "middle")
+            .text("Countries");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left + 20)
+            .attr("x",0 - (this.svgHeight / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Female/Male Ratio");
+
+        let countriesArrClone = countriesArr.slice();
+
+        countriesArrClone.sort(function (x, y) {
+            return 1/y['ratio'] - 1/x['ratio'];
+        })
+        let malesRatio = [];
+        countriesScale = [];
+        max = 1/d3.min(countriesArrClone,d => d.ratio)
+        for(let i = 0; i < 5; i++) {
+            malesRatio.push(countriesArrClone[i])
+            countriesScale.push(countriesArrClone[i].country)
+        }
+
+        svg = d3.select('#olympic-analysis').append('div').attr('id', 'sexRatioMaxContainer').attr('class', 'analysis-bars').append('svg')
+        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .append('g')
+            .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+            .attr('id', 'femalesCount')
+        yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
+
+
+        this.drawXAxis(svg, this.svgWidth, this.svgHeight, countriesScale)
+        this.drawYAxis(svg, this.sgWidth, this.svgHeight,  [0, max])
+        rect = svg.selectAll("rect").data(malesRatio);
+
+        newRect = rect.enter().append("rect");
+        rect.exit().remove();
+        rect = newRect.merge(rect).attr("width", d => 20)
+            .attr("height", d=> (this.svgHeight - yScale(1/d.ratio)))
+            .attr("x", d => xScale(d.country))
+            .attr("y", (d, i) => yScale(1/d.ratio))
+            .attr("id", d=>d.country + '_males_count')
+
+        //.append('title').html((d => self.tooltipRender(d.country)));
+
+        svg.append("text")
+            .attr("x", (this.svgWidth / 2))
+            .attr("y", 0 - (this.margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Worst female participation");
+
+        svg.append("text")
+            .attr("transform",
+                "translate(" + (this.svgWidth/2) + " ," +
+                (this.svgHeight + this.margin.top) + ")")
+            .attr('id', 'xLabelLine')
+            .style("text-anchor", "middle")
+            .text("Countries");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - this.margin.left + 20)
+            .attr("x",0 - (this.svgHeight / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Male/Female Ratio");
+
+
+
+
+
+    }
+
     drawRegionsBarChart() {
        let self = this;
 
@@ -445,7 +590,7 @@ class WorldMap {
             .attr('id', 'medalCounts')
         let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
         let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(regionsScale);
-        let color_scale = d3.scaleLinear().domain([0, max]).range(['yellow', 'red']);
+        let color_scale = d3.scaleLinear().domain([0, max]).range(['#e5f5f9', '#2ca25f']);
 
 
 

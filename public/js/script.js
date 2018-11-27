@@ -7,13 +7,14 @@ loadData().then(data => {
     let mappings =  getMappings(countryData, pop)
     d3.json('data/world.json').then(mapData => {
         let yearAggregate = aggregate(olympicsData, "Year", "Country");
-        console.log(yearAggregate)
         let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
-        console.log(mappings)
+        console.log(countryAggregate)
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
         map.drawMap(mapData);
         let aggregateViews = new AggregateViews(yearAggregate, countryAggregate)
         aggregateViews.drawHeatMap()
+        let sportAggregate = aggregate(olympicsData, 'Sport', 'Year')
+
     });
 });
 
@@ -45,6 +46,7 @@ function getMappings(countryData, data) {
                     discrepent = false;
                 }
             }
+
         }
         return {
             countryIdMap : countryIdMap,
@@ -87,6 +89,7 @@ async function loadData() {
 function aggregate(data, param, groupParam) {
     let aggregatedData = {}
     for(let i = 0; i < data.length; i++) {
+
         let paramValue = data[i][param]
         let groupParamValue  = groupParam ? data[i][groupParam] : ""
         if(!groupParamValue) {
@@ -170,6 +173,23 @@ function aggregate(data, param, groupParam) {
             aggregatedData[paramValue][groupParamValue]['Athlete'] = data[i]['Athlete']
             aggregatedData[paramValue][groupParamValue]['Gender'] = data[i]['Gender']
             aggregatedData[paramValue][groupParamValue]['Event'] = data[i]['Event']
+            if(data[i]['Gender'] == 'Men') {
+                if(!aggregatedData[paramValue][groupParamValue]['Males']) {
+                    aggregatedData[paramValue][groupParamValue]['Males'] = 1
+                }
+                else {
+                    aggregatedData[paramValue][groupParamValue]['Males']++;
+                }
+            }
+
+            else{
+                if(!aggregatedData[paramValue][groupParamValue]['Females']) {
+                    aggregatedData[paramValue][groupParamValue]['Females'] = 1
+                }
+                else {
+                    aggregatedData[paramValue][groupParamValue]['Females']++;
+                }
+            }
         }
         else {
             aggregatedData[paramValue]['City'] = data[i]['City']
