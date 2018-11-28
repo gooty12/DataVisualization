@@ -32,7 +32,7 @@ class WorldMap {
         this.lineChartWidth = 2*this.svgBounds.width - this.margin.left - this.margin.right - 200;
 
         this.infoBoxSvg = olympicAnalysisDiv.append('div').attr('id', 'infobox')
-        this.barChart = new BarChart();
+        //this.barChart = new BarChart();
     };
 
     drawMap(world) {
@@ -354,11 +354,11 @@ class WorldMap {
             countriesScale.push(countries[i]);
         }
         let svg = d3.select('#olympic-analysis').append('div').attr('id', 'medalCountsSection').attr('class', 'analysis-bars').append('svg')
-        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
-        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
-        this.barChart.drawBarChart(medalsData, this.svgWidth, this.svgHeight, svg, 'medalCount', xScale, yScale, d => d.country, d => d.medals.totalMedals, 'Countries', 'Medals', 'medals_count')
+        //let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+       // let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
+        //this.barChart.drawBarChart(medalsData, this.svgWidth, this.svgHeight, svg, 'medalCount', xScale, yScale, d => d.country, d => d.medals.totalMedals, 'Countries', 'Medals', 'medals_count')
         //BarChart cba = new BarChart();
-        /*svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
@@ -406,7 +406,7 @@ class WorldMap {
             .attr("x",0 - (this.svgHeight / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Total medals");*/
+            .text("Total medals");
 
     }
 
