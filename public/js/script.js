@@ -12,9 +12,9 @@ loadData().then(data => {
 
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
         map.drawMap(mapData);
-        let aggregateViews = new AggregateViews(yearAggregate, countryAggregate)
+        let sportAggregate = aggregate(olympicsData, "Sport", "Year")
+        let aggregateViews = new AggregateViews(yearAggregate, countryAggregate, sportAggregate)
         aggregateViews.drawHeatMap()
-        let sportAggregate = aggregate(olympicsData, 'Sport', 'Year')
 
 
     });

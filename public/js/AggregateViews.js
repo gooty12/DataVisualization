@@ -1,22 +1,65 @@
+class EntryData {
+
+    constructor(sport, year, value, x, y) {
+        this.sport = sport
+        this.year = year
+        this.value = value
+        this.x = x
+        this.y = y
+    }
+}
+
 class AggregateViews {
-    constructor(yearAggregate, countryAggregate) {
+    constructor(yearAggregate, countryAggregate, sportAggregate) {
         this.yearAggregate = yearAggregate;
         this.countryAggregate = countryAggregate;
+        this.sportAggregate = sportAggregate;
     }
 
     drawHeatMap() {
-        console.log(this.yearAggregate)
-        var margin = { top: 50, right: 0, bottom: 100, left: 30 },
-            width = 960 - margin.left - margin.right,
-            height = 430 - margin.top - margin.bottom,
-            gridSize = Math.floor(width / 24),
-            legendElementWidth = gridSize*2,
-            buckets = 9,
-            colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
-            days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
-            times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12p"];
+        console.log(Object.entries(this.sportAggregate))
+        let allEntries = Object.entries(this.sportAggregate);
 
-        let datasets = ["data.tsv", "data2.tsv"];
+        let tempEntries = []
+        for (let i = 0; i < 23; i++) {
+            tempEntries.push(allEntries[i]);
+        }
+        allEntries = tempEntries;
+        let sports = allEntries.map( obj => obj[0])
+        //console.log(sports)
+        let years = []
+        for (let yr = 1896; yr <= 2012; yr +=4) {
+            if (yr !== 1940 && yr !== 1944) {
+                years.push(yr);
+            }
+        }
+        //console.log(years)
+        console.log(allEntries.length)
+        let data = []
+        for (let i = 0; i < allEntries.length; i++) {
+            let sport = allEntries[i][0]
+            let yearWiseData = allEntries[i][1]
+          // console.log(value)
+           for (let j = 0; j < years.length; j++) {
+                let yr = years[j];
+                //let value = yearWiseData[yr]["medals"]["total"] ? yearWiseData[yr]["medals"]["total"] : 0
+               let value = 0;
+               if (yearWiseData[yr]) {
+                   value = yearWiseData[yr]["medals"]["total"]
+               }
+                data.push(new EntryData(sport, yr, value, i, j))
+            }
+        }
+
+        console.log(data)
+        var margin = { top: 50, right: 0, bottom: 100, left: 100 },
+            width = 1200 - margin.left - margin.right,
+            height = 960 - margin.top - margin.bottom,
+            gridSize = Math.floor(width / 30),
+            buckets = 9,
+            colors =  ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6" ,"#2171b5", "#08519c", "#08306b"]
+                //["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];// alternatively colorbrewer.YlGnBu[9]
+
 
         var svg = d3.select("#heatmapView").append("svg")
             .attr("width", width + margin.left + margin.right)
@@ -24,8 +67,8 @@ class AggregateViews {
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var dayLabels = svg.selectAll(".dayLabel")
-            .data(days)
+        var sportLabels = svg.selectAll(".sportLabel")
+            .data(sports)
             .enter().append("text")
             .text(function (d) { return d; })
             .attr("x", 0)
@@ -34,8 +77,8 @@ class AggregateViews {
             .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
 
-        var timeLabels = svg.selectAll(".timeLabel")
-            .data(times)
+        var yearLabels = svg.selectAll(".yearLabel")
+            .data(years)
             .enter().append("text")
             .text(function(d) { return d; })
             .attr("x", 7)
@@ -44,63 +87,40 @@ class AggregateViews {
             .attr("transform", "translate(" + gridSize / 2 + ", -6) rotate (-90)")
             .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
 
-        var heatmapChart = function(csvFile) {
-            d3.csv(csvFile).then( data => {
-                console.log(data)
-                var colorScale = d3.scaleQuantize()
-                    .domain([0, buckets - 1, d3.max(data, function (d) { return parseFloat(+d.value); })])
-                    .range(colors);
+        var colorScale = d3.scaleQuantize()
+            .domain([0, buckets - 1, d3.max(data, function (d) { return parseFloat(+d.value); })])
+            .range(colors);
 
-                var cards = svg.selectAll(".hour")
-                    .data(data, function(d) {return d.day+':'+d.hour;})
-                //.append("title");
+/*
+        let fills = colorbrewer.RdBu[6];
+        let colorScale =  d3.scale.linear().domain(d3.range(0, 1, 1.0 / (fills.length - 1))).range(fills);
+*/
 
-                cards.append("title");
+        var cards = svg.selectAll(".hour")
+            .data(data, function(d) {return d.sport+':'+d.year;})
+        //.append("title");
 
-                cards.enter().append("rect")
-                    .attr("x", function(d) { return (d.hour - 1) * gridSize; })
-                    .attr("y", function(d) { return (d.day - 1) * gridSize; })
-                    .attr("rx", 4)
-                    .attr("ry", 4)
-                    .attr("class", "hour bordered")
-                    .attr("width", gridSize)
-                    .attr("height", gridSize)
-                    .style("fill", function(d) { return colorScale(parseFloat(+d.value)); });
+       // cards.append("title");
 
-                cards.transition().duration(1000)
-                    .style("fill", function(d) { return colorScale(parseFloat(+d.value)); });
+        cards.enter().append("rect")
+            .attr("x", function(d) { return (d.y) * gridSize; })
+            .attr("y", function(d) { return (d.x) * gridSize; })
+            .attr("rx", 4)
+            .attr("ry", 4)
+            .attr("class", "hour bordered")
+            .attr("width", gridSize)
+            .attr("height", gridSize)
+            .style("fill", function(d) { return colorScale(parseFloat(+d.value)); })
+            .append("title")
+            .text(function(d) { return parseFloat(+d.value); });
 
-                cards.select("title").text(function(d) { return d.value; });
+        cards.transition().duration(1000)
+            .style("fill", function(d) { return colorScale(parseFloat(+d.value)); });
 
-                cards.exit().remove();
+       // cards.select("title").text(function(d) { return parseFloat(+d.value); });
 
-                /*
-                var legend = svg.selectAll(".legend")
-                    .data([0].concat(colorScale.quantiles()), function(d) { return d; });
+        cards.exit().remove();
 
-                legend.enter().append("g")
-                    .attr("class", "legend");
-
-                legend.append("rect")
-                    .attr("x", function(d, i) { return legendElementWidth * i; })
-                    .attr("y", height)
-                    .attr("width", legendElementWidth)
-                    .attr("height", gridSize / 2)
-                    .style("fill", function(d, i) { return colors[i]; });
-
-                legend.append("text")
-                    .attr("class", "mono")
-                    .text(function(d) { return "≥ " + Math.round(d); })
-                    .attr("x", function(d, i) { return legendElementWidth * i; })
-                    .attr("y", height + gridSize);
-
-                legend.exit().remove();
-                */
-
-            });
-        };
-
-        heatmapChart("data.csv");
 
     }
 }
