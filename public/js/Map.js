@@ -11,6 +11,8 @@ class CountryData {
     }
 }
 
+
+
 class WorldMap {
     constructor(yearAggregate, countryAggregate, mappings, defaultYear) {
         this.margin = {top: 50, right: 30, bottom: 30, left: 70};
@@ -27,9 +29,10 @@ class WorldMap {
         this.svgWidth = this.svgBounds.width/3 - this.margin.left - this.margin.right;
         this.svgHeight = this.svgBounds.height/3 - this.margin.top - this.margin.bottom;
         this.activeCountry = "";
-        this.lineChartWidth = this.svgBounds.width - this.margin.left - this.margin.right;
+        this.lineChartWidth = 2*this.svgBounds.width - this.margin.left - this.margin.right - 200;
 
         this.infoBoxSvg = olympicAnalysisDiv.append('div').attr('id', 'infobox')
+        this.barChart = new BarChart();
     };
 
     drawMap(world) {
@@ -168,6 +171,20 @@ class WorldMap {
             .append("g")
             .attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
 
+        var click = function(d) {
+            // fade out all text elements
+            svg.selectAll("text").transition().attr("opacity", 0);
+            svg.transition()
+                .duration(750)
+                .tween("scale", function() {
+                    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                        yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                        yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
+                    return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
+                })
+                .selectAll("path")
+                .attrTween("d", function(d) { return function() { return arc(d); }; });
+        }
 
         //console.log(partition(root).descendants());
             root = d3.hierarchy(root);
@@ -207,20 +224,7 @@ class WorldMap {
                 name = name == "bronze" ? "B" : name
                 return name; });
 
-        var click = function(d) {
-            // fade out all text elements
-            text.transition().attr("opacity", 0);
-            svg.transition()
-                .duration(750)
-                .tween("scale", function() {
-                    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-                        yd = d3.interpolate(y.domain(), [d.y0, 1]),
-                        yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
-                    return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
-                })
-                .selectAll("path")
-                .attrTween("d", function(d) { return function() { return arc(d); }; });
-        }
+
 
 
         d3.select(self.frameElement).style("height", height + "px");
@@ -306,8 +310,6 @@ class WorldMap {
             d3.select('#' + countries[i] + '_females_count').attr('fill', color_scale(total));
             d3.select('#' + countries[i] + '_males_count').attr('fill', color_scale(total));
         }
-
-
     }
 
     clearHighlight() {
@@ -352,7 +354,11 @@ class WorldMap {
             countriesScale.push(countries[i]);
         }
         let svg = d3.select('#olympic-analysis').append('div').attr('id', 'medalCountsSection').attr('class', 'analysis-bars').append('svg')
-        svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(countriesScale);
+        this.barChart.drawBarChart(medalsData, this.svgWidth, this.svgHeight, svg, 'medalCount', xScale, yScale, d => d.country, d => d.medals.totalMedals, 'Countries', 'Medals', 'medals_count')
+        //BarChart cba = new BarChart();
+        /*svg = svg.attr("width", (this.svgWidth + this.margin.left + this.margin.right))
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
@@ -400,7 +406,7 @@ class WorldMap {
             .attr("x",0 - (this.svgHeight / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Total medals");
+            .text("Total medals");*/
 
     }
 
@@ -426,6 +432,9 @@ class WorldMap {
         let countriesScale = [];
         let femaleRatio = [];
         for(let i = 0; i < 5; i++) {
+            if(!countriesArr[i]) {
+                break;
+            }
             countriesScale.push(countriesArr[i].country)
             femaleRatio.push(countriesArr[i])
         }
@@ -489,6 +498,9 @@ class WorldMap {
         countriesScale = [];
         max = 1/d3.min(countriesArrClone,d => d.ratio)
         for(let i = 0; i < 5; i++) {
+            if(!countriesArrClone[i]) {
+                break;
+            }
             malesRatio.push(countriesArrClone[i])
             countriesScale.push(countriesArrClone[i].country)
         }
@@ -818,40 +830,62 @@ class WorldMap {
     updateLineChart(param) {
         let self = this;
         d3.select('#country-detail').select('#countryDetails').remove();
-        let data = this.countryAggregate[this.activeCountry]
-        if(!data) {
-            return;
-        }
-        let countryData = [];
-        let testObj
-        let yearScale = [];
-        let year = 1896;
-        let max = -1;
         let dataArray = [];
-        while(year <= 2012) {
-            if(year != 1916 && year != 1940 && year != 1944) {
-                let yearString = year + ''
-                yearScale.push(yearString)
-                if(data[yearString]) {
-                    let count = data[yearString]['medals'][param]
-                    dataArray.push({
-                        year: yearString,
-                        count: count
-                        })
-                        if(count > max) {
-                           max = count;
-                        }
+        let yearScale = [];
+        let max = -1;
+
+        var width = 500;
+        var height = 300;
+        var margin = 50;
+        var duration = 250;
+
+        var lineOpacity = "0.25";
+        var lineOpacityHover = "0.85";
+        var otherLinesOpacityHover = "0.1";
+        var lineStroke = "1.5px";
+        var lineStrokeHover = "2.5px";
+
+        var circleOpacity = '0.85';
+        var circleOpacityOnLineHover = "0.25"
+        var circleRadius = 3;
+        var circleRadiusHover = 6;
+        var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+
+
+        let countries = Object.keys(this.countryAggregate)
+        for(let i = 0; i < countries.length; i++) {
+            let dataPoints = [];
+            for(let j = 1896; j < 2016; j+= 4) {
+                if(j == 1916 || j == 1940 || j== 1944) {
+                    continue;
+                }
+                yearScale.push(j + '')
+                if(this.countryAggregate[countries[i]][j]) {
+                    let medals = this.countryAggregate[countries[i]][j]['medals'][param];
+                    dataPoints.push({
+                        'year': j + '',
+                        'medals': medals
+                    })
+                    if(medals > max) {
+                        max = medals;
+                    }
                 }
                 else {
-                    dataArray.push({
-                        year: yearString,
-                        count: 0
+                    dataPoints.push({
+                        'year': j + '',
+                        'medals': 0
                     })
                 }
-
             }
-            year += 4;
+            dataArray.push({
+                'country': countries[i],
+                'points': dataPoints
+            })
         }
+
+
+
 
         let svg = d3.select('#country-detail').append('div').attr('id', 'countryDetails').append('svg')
         svg = svg.attr("width", this.lineChartWidth + this.margin.left + this.margin.right)
@@ -862,17 +896,97 @@ class WorldMap {
 
         let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
         let xScale = d3.scalePoint().range([0, this.lineChartWidth]).domain(yearScale);
-        let valueline = d3.line()
-            .x(function(d) { return xScale(d.year); })
-            .y(function(d) { return yScale(d.count); });
+        let line = d3.line()
+            .x(d => xScale(d.year))
+            .y(d => yScale(d.medals));
 
+        let lines = svg.append('g')
+            .attr('class', 'lines');
 
-        this.drawXAxis(svg, this.lineChartWidth, this.svgHeight, yearScale)
-        this.drawYAxis(svg, this.lineChartWidth, this.svgHeight,  [0, max])
-        svg.append("path")
-            .datum(dataArray)
-            .attr("class", "line")
-            .attr("d", valueline);
+        lines.selectAll('.line-group')
+            .data(dataArray).enter()
+            .append('g')
+            .attr('class', 'line-group')
+            .on("mouseover", function(d, i) {
+                svg.append("text")
+                    .attr("class", "title-text")
+                    .style("fill", color(i))
+                    .text(d.country)
+                    .attr("text-anchor", "middle")
+                    .attr("x", (this.svgWidth)/2)
+                    .attr("y", 5);
+            })
+            .on("mouseout", function(d) {
+                svg.select(".title-text").remove();
+            })
+            .append('path')
+            .attr('class', 'line')
+            .attr('id', d => d.country + '_line')
+
+            .attr('d', d => line(d.points))
+            .style('stroke', (d, i) => color(i))
+            .style('opacity', lineOpacity)
+            .on("mouseover", function(d) {
+                d3.selectAll('.line')
+                    .style('opacity', otherLinesOpacityHover);
+                d3.selectAll('.circle')
+                    .style('opacity', circleOpacityOnLineHover);
+                d3.select(this)
+                    .style('opacity', lineOpacityHover)
+                    .style("stroke-width", lineStrokeHover)
+                    .style("cursor", "pointer");
+            })
+            .on("mouseout", function(d) {
+                d3.selectAll(".line")
+                    .style('opacity', lineOpacity);
+                d3.selectAll('.circle')
+                    .style('opacity', circleOpacity);
+                d3.select(this)
+                    .style("stroke-width", lineStroke)
+                    .style("cursor", "none");
+            });
+
+        lines.selectAll("circle-group")
+            .data(dataArray).enter()
+            .append("g")
+            .style("fill", (d, i) => color(i))
+            .selectAll("circle")
+            .data(d => d.points).enter()
+            .append("g")
+            .attr("class", "circle")
+            .on("mouseover", function(d) {
+                d3.select(this)
+                    .style("cursor", "pointer")
+                    .append("text")
+                    .attr("class", "text")
+                    .text(`${d['medals'][param]}`)
+                    .attr("x", d => xScale(d.year) + 5)
+                    .attr("y", d => yScale(d.medals) - 10);
+            })
+            .on("mouseout", function(d) {
+                d3.select(this)
+                    .style("cursor", "none")
+                    .transition()
+                    .duration(duration)
+                    .selectAll(".text").remove();
+            })
+            .append("circle")
+            .attr("cx", d => xScale(d.year))
+            .attr("cy", d => yScale(d.medals))
+            .attr("r", circleRadius)
+            .style('opacity', circleOpacity)
+            .on("mouseover", function(d) {
+                d3.select(this)
+                    .transition()
+                    .duration(duration)
+                    .attr("r", circleRadiusHover);
+            })
+            .on("mouseout", function(d) {
+                d3.select(this)
+                    .transition()
+                    .duration(duration)
+                    .attr("r", circleRadius);
+            });
 
         let dropDownData = ["total", "gold", "silver", "bronze"];
         let select = d3.select('#countryChart').append('select')
@@ -912,13 +1026,13 @@ class WorldMap {
             .append('option')
             .text(function (d) { return d; });
 
-        svg.selectAll(".dot")
+       /* svg.selectAll(".dot")
             .data(dataArray)
             .enter().append("circle") // Uses the enter().append() method
             .attr("class", "dot") // Assign a class for styling
             .attr("cx", function(d, i) { return xScale(d.year) })
             .attr("cy", function(d) { return yScale(d.count) })
-            .attr("r", 5);
+            .attr("r", 5);*/
     }
 
     getText() {

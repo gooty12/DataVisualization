@@ -9,11 +9,13 @@ loadData().then(data => {
         let yearAggregate = aggregate(olympicsData, "Year", "Country");
         let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
         console.log(countryAggregate)
+
         let map = new WorldMap(yearAggregate, countryAggregate, mappings, '2012');
         map.drawMap(mapData);
         let aggregateViews = new AggregateViews(yearAggregate, countryAggregate)
         aggregateViews.drawHeatMap()
         let sportAggregate = aggregate(olympicsData, 'Sport', 'Year')
+
 
     });
 });
