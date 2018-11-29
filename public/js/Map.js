@@ -832,16 +832,9 @@ class WorldMap {
         let yearScale = [];
         let max = -1;
 
-        var width = 500;
-        var height = 300;
-        var margin = 50;
+
         var duration = 250;
 
-        var lineOpacity = "0.25";
-        var lineOpacityHover = "0.85";
-        var otherLinesOpacityHover = "0.1";
-        var lineStroke = "1.5px";
-        var lineStrokeHover = "2.5px";
 
         var circleOpacity = '0.85';
         var circleOpacityOnLineHover = "0.25"

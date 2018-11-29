@@ -1,6 +1,11 @@
 loadData().then(data => {
     let self = this;
     let olympicsData = data['olympicsData'];
+    let hostList = olympicsData.filter(d => d['Host'])
+    let hostObj = {}
+    for(let i = 0; i < hostList.length; i++) {
+        hostObj[hostList[i]['Year']] = hostList[i]['Host'];
+    }
     let countryData = data['countryData'];
     let pop = data['pop'];
 
@@ -15,6 +20,7 @@ loadData().then(data => {
         let sportAggregate = aggregate(olympicsData, "Sport", "Year")
         let aggregateViews = new AggregateViews(yearAggregate, countryAggregate, sportAggregate)
         aggregateViews.drawHeatMap()
+        let hostChart = new HostChart(countryAggregate, hostObj, mappings);
 
 
     });
@@ -90,6 +96,7 @@ async function loadData() {
 
 function aggregate(data, param, groupParam) {
     let aggregatedData = {}
+    let hostList = {}
     for(let i = 0; i < data.length; i++) {
 
         let paramValue = data[i][param]
