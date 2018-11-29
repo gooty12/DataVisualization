@@ -462,3 +462,14 @@ path {
     left:10px;
 }
 
+.selected-line {
+    opacity: 1.8;
+    stroke-width: 3px;
+    fill: none
+}
+.line {
+    opacity: 0.2;
+    stroke-width: 1px;
+    fill: none
+}
+

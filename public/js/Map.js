@@ -1,5 +1,4 @@
 class CountryData {
-
     constructor(type, mapId, countryId, countryName, region, properties, geometry) {
         this.type = type;
         this.mapId = mapId;
@@ -11,8 +10,6 @@ class CountryData {
     }
 }
 
-
-
 class WorldMap {
     constructor(yearAggregate, countryAggregate, mappings, defaultYear) {
         this.margin = {top: 50, right: 30, bottom: 30, left: 70};
@@ -23,16 +20,13 @@ class WorldMap {
         this.year = defaultYear;
         this.svg = d3.select("#map-chart").append("svg");
         this.mapSvg = this.svg.append("g");
-        let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true);
+        let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true).attr('height', '740px');
 
         this.svgBounds = olympicAnalysisDiv.node().getBoundingClientRect();
         this.svgWidth = this.svgBounds.width/3 - this.margin.left - this.margin.right;
         this.svgHeight = this.svgBounds.height/3 - this.margin.top - this.margin.bottom;
         this.activeCountry = "";
         this.lineChartWidth = 2*this.svgBounds.width - this.margin.left - this.margin.right - 200;
-
-        this.infoBoxSvg = olympicAnalysisDiv.append('div').attr('id', 'infobox')
-        //this.barChart = new BarChart();
     };
 
     drawMap(world) {
@@ -74,7 +68,9 @@ class WorldMap {
             .attr('class', 'country')
             .on('click', function (d) {
                 self.activeCountry = d.countryId;
-                self.updateLineChart('total')
+                d3.select('#' + self.activeCountry + '_line').classed('line', false)
+                d3.select('#' + self.activeCountry + '_line').classed('selected-line', true)
+
             })
             .append('title').html((d => self.tooltipRender(d.countryId)))
 
@@ -91,9 +87,9 @@ class WorldMap {
             .classed("graticule", true)
             .attr("d", path);
 
-        let info_box = d3.select('#country-detail');
+        //let info_box = d3.select('#country-detail');
         //info_box = info_box.append('div').classed("label", true).attr('id', 'infoBoxContainer');
-        let info_box_title = info_box.append('div');
+        //let info_box_title = info_box.append('div');
         /*info_box_title.append('text').text(infoObjects['population'].country).classed("i."+infoObjects['population'].region,false);
         for(let obj in infoObjects){
             let r = info_box.append('div').text(infoObjects[obj].indicator_name + ": ").classed("stat-text",true);
@@ -101,7 +97,7 @@ class WorldMap {
         }*/
         this.drawYearBar()
         this.updateMap();
-
+        this.updateLineChart('total')
        // _this.drawLegend();
         this.drawSunburst(2012)
     }
@@ -829,7 +825,7 @@ class WorldMap {
 
     updateLineChart(param) {
         let self = this;
-        d3.select('#country-detail').select('#countryDetails').remove();
+        d3.select('#countryDetails').remove();
         let dataArray = [];
         let yearScale = [];
         let max = -1;
@@ -887,12 +883,12 @@ class WorldMap {
 
 
 
-        let svg = d3.select('#country-detail').append('div').attr('id', 'countryDetails').append('svg')
+        let svg = d3.select('#country-detail').append('svg')
         svg = svg.attr("width", this.lineChartWidth + this.margin.left + this.margin.right)
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
-            .attr('id', 'countryChart');
+            .attr('id', 'countryDetails');
 
         let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
         let xScale = d3.scalePoint().range([0, this.lineChartWidth]).domain(yearScale);
@@ -913,7 +909,7 @@ class WorldMap {
                     .style("fill", color(i))
                     .text(d.country)
                     .attr("text-anchor", "middle")
-                    .attr("x", (this.svgWidth)/2)
+                    .attr("x", 800)
                     .attr("y", 5);
             })
             .on("mouseout", function(d) {
@@ -924,27 +920,31 @@ class WorldMap {
             .attr('id', d => d.country + '_line')
 
             .attr('d', d => line(d.points))
+            //.attr('class', 'line-click')
             .style('stroke', (d, i) => color(i))
-            .style('opacity', lineOpacity)
             .on("mouseover", function(d) {
-                d3.selectAll('.line')
-                    .style('opacity', otherLinesOpacityHover);
                 d3.selectAll('.circle')
                     .style('opacity', circleOpacityOnLineHover);
                 d3.select(this)
-                    .style('opacity', lineOpacityHover)
-                    .style("stroke-width", lineStrokeHover)
+                    .classed('selected-line', true)
+                    .classed('line', false)
                     .style("cursor", "pointer");
             })
             .on("mouseout", function(d) {
-                d3.selectAll(".line")
-                    .style('opacity', lineOpacity);
                 d3.selectAll('.circle')
                     .style('opacity', circleOpacity);
                 d3.select(this)
-                    .style("stroke-width", lineStroke)
                     .style("cursor", "none");
-            });
+                d3.select(this).classed('selected-line', false)
+                d3.select(this).classed('line', true)
+
+            })
+           /* .on('click', function () {
+               // d3.select(this).classed("myCssClass", d3.select(this).classed("myCssClass") ? false : true);
+                d3.select(this).classed('selected-line-click', !d3.select(this).classed("selected-line-click"))
+                d3.select(this).classed('line-click', !d3.select(this).classed("line-click"))
+
+            });*/
 
         lines.selectAll("circle-group")
             .data(dataArray).enter()
@@ -992,9 +992,7 @@ class WorldMap {
         let select = d3.select('#countryChart').append('select')
             .attr('class','select')
             .attr('id', 'medalOptions')
-            .on('change', function () {
-                self.updateLineChart(this.value)
-            })
+
 
         svg.append("text")
             .attr("x", (this.lineChartWidth/2))
@@ -1002,7 +1000,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text(this.getText());
+            .text("Performance of all countries across olympics");
 
         svg.append("text")
             .attr("transform",
@@ -1035,10 +1033,7 @@ class WorldMap {
             .attr("r", 5);*/
     }
 
-    getText() {
-        return this.mappings['countryIdToName'][this.activeCountry] ? this.mappings['countryIdToName'][this.activeCountry] + ' performance chart' : 'performance chart';
 
-    }
 
     drawInfoBox() {
         let info_box = d3.select('#country-detail');
