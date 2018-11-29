@@ -204,6 +204,8 @@ class WorldMap {
                 .append("title")
                 .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
 
+
+
         var text = svg.selectAll("text")
             .data(root.descendants())
             .enter()
