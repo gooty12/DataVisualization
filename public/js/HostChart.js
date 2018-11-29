@@ -259,14 +259,14 @@ class HostChart {
             .on("mouseover", function(d) {
                 d3.select(this)
                     .transition()
-                    .duration(duration)
-                    .attr("r", 0.4);
+                    .duration(10)
+                    .attr("r", 2);
             })
             .on("mouseout", function(d) {
                 d3.select(this)
                     .transition()
-                    .duration(duration)
-                    .attr("r", 0.5);
+                    .duration(10)
+                    .attr("r", 2);
             });    }
 
 }

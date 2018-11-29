@@ -21,8 +21,6 @@ loadData().then(data => {
         let aggregateViews = new AggregateViews(yearAggregate, countryAggregate, sportAggregate)
         aggregateViews.drawHeatMap()
         let hostChart = new HostChart(countryAggregate, hostObj, mappings);
-
-
     });
 });
 
@@ -97,14 +95,15 @@ async function loadData() {
 function aggregate(data, param, groupParam) {
     let aggregatedData = {}
     let hostList = {}
+    let visitedSet = {}
     for(let i = 0; i < data.length; i++) {
+        let medalType = '';
 
         let paramValue = data[i][param]
         let groupParamValue  = groupParam ? data[i][groupParam] : ""
         if(!groupParamValue) {
             continue;
         }
-
         if((!aggregatedData.hasOwnProperty(paramValue))) {
             aggregatedData[paramValue] = {}
             if(!groupParam) {
@@ -137,7 +136,12 @@ function aggregate(data, param, groupParam) {
             aggregatedData[paramValue][groupParamValue]['medals']['total'] = 0;
 
         }
+
         if(data[i]['Medal'] === 'Gold') {
+            medalType = 'gold'
+            if(isVisitedSport(visitedSet, medalType, data[i][param], data[i]['Event'], data[i][groupParam], data[i]['Gender'])) {
+                continue;
+            }
             if(!groupParamValue) {
 
                 aggregatedData[paramValue]['medals']['gold']++
@@ -151,6 +155,11 @@ function aggregate(data, param, groupParam) {
             }
         }
         else if(data[i]['Medal'] === 'Silver') {
+            medalType = 'silver'
+            if(isVisitedSport(visitedSet, medalType, data[i][param], data[i]['Event'], data[i][groupParam], data[i]['Gender'])) {
+                continue;
+            }
+
             if(!groupParamValue) {
                 aggregatedData[paramValue]['medals']['silver']++
                 aggregatedData[paramValue]['medals']['total']++
@@ -163,6 +172,10 @@ function aggregate(data, param, groupParam) {
             }
         }
         else if(data[i]['Medal'] === 'Bronze') {
+            medalType = 'bronze'
+            if(isVisitedSport(visitedSet, medalType, data[i][param], data[i]['Event'], data[i][groupParam], data[i]['Gender'])) {
+                continue;
+            }
             if(!groupParamValue) {
                 aggregatedData[paramValue]['medals']['bronze']++
                 aggregatedData[paramValue]['medals']['total']++
@@ -208,9 +221,29 @@ function aggregate(data, param, groupParam) {
             aggregatedData[paramValue]['Gender'] = data[i]['Gender']
             aggregatedData[paramValue]['Event'] = data[i]['Event']
         }
+        if(!visitedSet[data[i][param]]) {
+            visitedSet[data[i][param]] = {}
+        }
+        if(!visitedSet[data[i][param]][data[i][groupParam]]) {
+            visitedSet[data[i][param]][data[i][groupParam]] = {}
+        }
+        if(!visitedSet[data[i][param]][data[i][groupParam]][data[i]['Event']]) {
+            visitedSet[data[i][param]][data[i][groupParam]][data[i]['Event']] = {}
+        }
+        if(!visitedSet[data[i][param]][data[i][groupParam]][data[i]['Event']][data[i]['Gender']]) {
+            visitedSet[data[i][param]][data[i][groupParam]][data[i]['Event']][data[i]['Gender']] = {}
+        }
+        visitedSet[data[i][param]][data[i][groupParam]][data[i]['Event']][data[i]['Gender']][medalType] = true;
     }
     return aggregatedData;
 }
 
+ function isVisitedSport(visited, medalType, param, sport, groupParam, gender) {
+     if(visited[param] && visited[param][groupParam] && visited[param][groupParam][sport] && visited[param][groupParam][sport][gender] &&  visited[param][groupParam][sport][gender][medalType]) {
+
+        return true;
+     }
+     return false;
+}
 
 
