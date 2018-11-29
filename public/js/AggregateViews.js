@@ -57,7 +57,7 @@ class AggregateViews {
             height = 960 - margin.top - margin.bottom,
             gridSize = Math.floor(width / 30),
             buckets = 9,
-            colors =  ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6" ,"#2171b5", "#08519c", "#08306b"]
+            colors =  ["#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6" ,"#2171b5", "#08519c", "#08306b"]
                 //["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];// alternatively colorbrewer.YlGnBu[9]
 
 
@@ -87,8 +87,8 @@ class AggregateViews {
             .attr("transform", "translate(" + gridSize / 2 + ", -6) rotate (-90)")
             .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
 
-        var colorScale = d3.scaleQuantize()
-            .domain([0, buckets - 1, d3.max(data, function (d) { return parseFloat(+d.value); })])
+        var colorScale = d3.scaleLinear()
+            .domain([0, 10, 20, 30, 40, 50, 60, d3.max(data, function (d) { return parseFloat(+d.value); })])
             .range(colors);
 
 /*
