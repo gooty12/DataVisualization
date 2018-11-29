@@ -40,9 +40,9 @@ class YearChart {
     {
 
         let this_ = this;
-        let yearData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'All'];
+        let yearData = [1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 'All'];
         let xScale = d3.scaleBand()
-            .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'All'])
+            .domain([1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 'All'])
             .range([this.margin.left, this.svgWidth])
 
         let dashlineSelect = this.svg.selectAll('line').data([1])

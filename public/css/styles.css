@@ -473,3 +473,201 @@ path {
     fill: none
 }
 
+body {
+    min-height: 2000px;
+    padding-top: 70px;
+}
+.stuck {
+    position: fixed;
+}
+.BigContainer{
+    margin: auto;
+    padding: 10px;
+}
+#lineChart{
+    border-style: solid;
+    border-width: 1.5px;
+    float: right;
+    margin: auto;
+    padding: 10px;
+}
+.line {
+    stroke: #000000;
+    stroke-width:4;
+}
+.lineCeritified {
+    stroke: #56ef89;
+    stroke-width:1;
+}
+.lineDenied {
+    stroke: #c10b0b;
+    stroke-width:1;
+}
+.lineWithdrawn {
+    stroke: #840ac1;
+    stroke-width:1;
+}
+.linesCertified_Expired {
+    stroke: #ffab44;
+    stroke-width:1;
+}
+
+#map {
+    float: left;
+    border-style: solid;
+    border-width: 1.5px;
+
+}
+#barChart{
+    float: left;
+    border-style: solid;
+    border-width: 1.5px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+
+}
+#container0{
+    margin-top: 60px;
+}
+
+#barChart2 {
+    float: right;
+    border-style: solid;
+    border-width: 1.5px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#container{
+    margin-top: 150px;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+.container_cls{
+    margin-top: 150px;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+#parallelP {
+    margin-top:50px;
+    margin-left: 20px;
+}
+#container0{
+
+}
+#overlay {
+    position: fixed; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: 50%; /* Full width (cover the whole page) */
+    height: 50%; /* Full height (cover the whole page) */
+    top: 25%;
+    left: 25%;
+    right: 25%;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+}
+#container1{
+    margin-top:150px;
+    margin-left: 20px;
+}
+.hide {
+    display: none;
+}
+.show{
+    display: block;
+}
+#yearwise{
+    position: absolute;
+    right: 25%;
+}
+.highlighted {
+    stroke: #404040;
+    stroke-width:4;
+    r:18px;
+
+}
+
+.selected{
+    stroke: #404040;
+    stroke-width:4;
+
+}
+.yearChart{
+    stroke: #FFF;
+}
+.yeartext {
+    text-anchor:middle;
+    font-size: 16px;
+    fill: #565656;
+    stroke-width: 0.1px;
+}
+#xAxis path,
+#yAxis path {
+    fill: none;
+    stroke: black;
+}
+
+.d3-tip {
+    line-height: 5;
+    position : fixed;
+    min-width: 610px;
+    border-style: groove;
+    padding: 12px;
+    background: #FFFFFF;
+    color: rgba(0, 0, 0, 0.8);
+
+    pointer-events: none;
+}
+
+.background path {
+    fill: none;
+    stroke: #ddd;
+    shape-rendering: crispEdges;
+}
+
+.foreground path {
+    fill: none;
+    stroke: steelblue;
+}
+.brush .extent {
+    fill-opacity: .3;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+.content {
+    display: inline-block;
+    width: 48%;
+}
+
+.contentforparallelplot {
+    display: inline-block;
+    width: 100%;
+}
+
+path {
+    fill: none;
+    stroke-width: 1px;
+    stroke: #222;
+}
+
+
+#footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+#text{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 20px;
+    color: white;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+}
+
+
+

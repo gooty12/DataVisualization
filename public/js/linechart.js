@@ -13,7 +13,7 @@ class LineChart{
         this.svg = lineDiv.append("svg")
             .attr("width",this.svgWidth)
             .attr("height",this.svgHeight)
-            .attr("transform", "translate(0,0)")
+            .attr("transform", "translate(0,0)");
 
 
         //this.svgWidth = 650;
@@ -108,6 +108,7 @@ class LineChart{
 
         // Implement Dictionary to keep track of all the years data
         let THIS  = this;
+        let appCount = 0;
         let usaCount = 0;
         let rusCount = 0;
         let gerCount = 0;
@@ -139,9 +140,9 @@ class LineChart{
         };
         this.yearDataSet[year]=dataObj;
         // console.log(this.yearDataSet)
-        let yearData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let yearData = [1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012];
         let xScale = d3.scaleBand()
-            .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            .domain([1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012])
             .range([this.margin.left, this.svgWidth-this.margin.right]);
         let yScale = d3.scaleLinear()
             .domain([0, 300])
