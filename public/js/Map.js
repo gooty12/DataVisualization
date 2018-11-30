@@ -237,7 +237,7 @@ class WorldMap {
                     }
 
                 })
-                .on("click", click)
+                //.on("click", click)
                 .append("title")
                 .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
 
