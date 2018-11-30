@@ -499,3 +499,12 @@ path {
 #heatmapView{
     display: inline-block;
 }
+
+#country-drop-down text {
+    margin-left: 400px;
+}
+
+
+#country-drop-down select {
+    margin-left: 515px;
+}

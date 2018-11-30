@@ -106,7 +106,7 @@ class WorldMap {
         this.drawYearBar()
         this.updateMap();
         this.updateLineChart('total')
-        let dropDownData = [{'value': 'total', 'display' : 'Total'}, {'value': 'gold', 'display' : 'Gold'}, {'value': 'silver', 'display' : 'Silver'}, {'value': 'bronze', 'display' : 'Bronze'}];
+        let dropDownData = [{'value': 'total', 'display' : 'Total Medals'}, {'value': 'gold', 'display' : 'Gold Medals'}, {'value': 'silver', 'display' : 'Silver Medals'}, {'value': 'bronze', 'display' : 'Bronze Medals'}];
         d3.select('#country-drop-down').append("text")
             .attr("x", (this.lineChartWidth/2))
             .attr("y", 20)
