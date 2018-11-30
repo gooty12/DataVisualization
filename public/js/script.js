@@ -10,6 +10,8 @@ loadData().then(data => {
     let pop = data['pop'];
 
     let mappings =  getMappings(countryData, pop)
+    let index = 0;
+
     d3.json('data/world.json').then(mapData => {
         let yearAggregate = aggregate(olympicsData, "Year", "Country");
         let countryAggregate = aggregate(olympicsData, 'Country', 'Year')
@@ -21,6 +23,25 @@ loadData().then(data => {
         let aggregateViews = new AggregateViews(yearAggregate, countryAggregate, sportAggregate)
         aggregateViews.drawHeatMap()
         let hostChart = new HostChart(countryAggregate, hostObj, mappings);
+        document.onkeyup = function (e) {
+
+        }
+        document.onkeydown = function (e) {
+            e.preventDefault();
+            if(e.keyCode == 38) {
+                if(index < 13) {
+                    index++;
+                    hostChart.updateStory(index)
+
+                }
+            }
+            else if(e.keyCode == 40) {
+                if(index > 0) {
+                    index--;
+                    hostChart.updateStory(index)
+                }
+            }
+        }
     });
 });
 

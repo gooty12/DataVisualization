@@ -20,13 +20,14 @@ class WorldMap {
         this.year = defaultYear;
         this.svg = d3.select("#map-chart").append("svg");
         this.mapSvg = this.svg.append("g");
-        let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true).attr('height', '740px');
+        let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true);
 
         this.svgBounds = olympicAnalysisDiv.node().getBoundingClientRect();
         this.svgWidth = this.svgBounds.width/3 - this.margin.left - this.margin.right;
-        this.svgHeight = this.svgBounds.height/3 - this.margin.top - this.margin.bottom;
+        this.svgHeight = this.svgBounds.height/2 - this.margin.top - this.margin.bottom;
         this.activeCountry = "";
-        this.lineChartWidth = 2*this.svgBounds.width - this.margin.left - this.margin.right - 200;
+        this.lineChartWidth = this.svgBounds.width - this.margin.left - this.margin.right;
+        this.lineChartHeight = this.svgBounds.height - this.margin.top - this.margin.bottom;
     };
 
     drawMap(world) {
@@ -880,13 +881,15 @@ class WorldMap {
 
         let svg = d3.select('#country-detail').append('svg')
         svg = svg.attr("width", this.lineChartWidth + this.margin.left + this.margin.right)
-            .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
+            .attr("height", (this.lineChartHeight + this.margin.top + this.margin.bottom))
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
             .attr('id', 'countryDetails');
 
-        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
+        let yScale = d3.scaleLinear().range([this.lineChartHeight, 0]).domain([0, max]);
         let xScale = d3.scalePoint().range([0, this.lineChartWidth]).domain(yearScale);
+        this.drawXAxis(svg, this.lineChartWidth, this.lineChartHeight, yearScale)
+        this.drawYAxis(svg, this.lineChartWidth, this.lineChartHeight, [0, max])
         let line = d3.line()
             .x(d => xScale(d.year))
             .y(d => yScale(d.medals));
@@ -904,7 +907,7 @@ class WorldMap {
                     .style("fill", color(i))
                     .text(d.country)
                     .attr("text-anchor", "middle")
-                    .attr("x", 800)
+                    .attr("x", self.lineChartWidth/2)
                     .attr("y", 5);
             })
             .on("mouseout", function(d) {
@@ -918,12 +921,24 @@ class WorldMap {
             //.attr('class', 'line-click')
             .style('stroke', (d, i) => color(i))
             .on("mouseover", function(d) {
+
+
                 d3.selectAll('.circle')
                     .style('opacity', circleOpacityOnLineHover);
                 d3.select(this)
                     .classed('selected-line', true)
                     .classed('line', false)
-                    .style("cursor", "pointer");
+                    .style("cursor", "pointer")
+
+              /*  d3.select(this)
+                    .style("cursor", "pointer")
+                    .append("text")
+                    .attr("class", "text")
+                    .text(`${d['medals']}`)
+                    .attr("x", function (d) {
+                        console.log(d)
+                    })
+                    .attr("y", d => yScale(d.medals) - 10);*/
             })
             .on("mouseout", function(d) {
                 d3.selectAll('.circle')
@@ -932,16 +947,34 @@ class WorldMap {
                     .style("cursor", "none");
                 d3.select(this).classed('selected-line', false)
                 d3.select(this).classed('line', true)
+                /*d3.select(this).selectAll('.text').remove();*/
 
             })
-           /* .on('click', function () {
+            /*.on('click', function () {
                // d3.select(this).classed("myCssClass", d3.select(this).classed("myCssClass") ? false : true);
                 d3.select(this).classed('selected-line-click', !d3.select(this).classed("selected-line-click"))
                 d3.select(this).classed('line-click', !d3.select(this).classed("line-click"))
 
+                .on("mouseover", function(d) {
+                d3.select(this)
+                    .style("cursor", "pointer")
+                    .append("text")
+                    .attr("class", "text")
+                    .text(`${d['medals']}`)
+                    .attr("x", d => xScale(d.year) + 5)
+                    .attr("y", d => yScale(d.medals) - 10);
+            })
+            .on("mouseout", function(d) {
+                d3.select(this)
+                    .style("cursor", "none")
+                    .transition()
+                    .duration(10)
+                    .selectAll(".text").remove();
+            })
+
             });*/
 
-        lines.selectAll("circle-group")
+        /*lines.selectAll("circle-group")
             .data(dataArray).enter()
             .append("g")
             .style("fill", (d, i) => color(i))
@@ -981,7 +1014,7 @@ class WorldMap {
                     .transition()
                     .duration(duration)
                     .attr("r", circleRadius);
-            });
+            });*/
 
         let dropDownData = ["total", "gold", "silver", "bronze"];
         let select = d3.select('#countryChart').append('select')
@@ -1000,7 +1033,7 @@ class WorldMap {
         svg.append("text")
             .attr("transform",
                 "translate(" + (this.lineChartWidth/2) + " ," +
-                (this.svgHeight + this.margin.top) + ")")
+                (this.lineChartHeight + 30) + ")")
             .attr('id', 'xLabelLine')
             .style("text-anchor", "middle")
             .text("Years");

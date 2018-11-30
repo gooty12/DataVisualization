@@ -1,7 +1,7 @@
 class HostChart {
     constructor(data, hostObj, mappings) {
         this.hostObj = hostObj;
-        this.margin = {top: 10, right: 20, bottom: 20, left: 50};
+        this.margin = {top: 50, right: 30, bottom: 30, left: 70};
         let divyearChart = d3.select("#year-chart");
         this.divChart = divyearChart;
 
@@ -9,10 +9,11 @@ class HostChart {
         this.svgWidth = this.svgBounds.width - this.margin.left - this.margin.right;
         this.svgHeight = 150;
         this.svg = divyearChart.append("svg")
-            .attr("width", this.svgWidth)
+            .attr("width", this.svgWidth + this.margin.right + this.margin.left)
             .attr("height", this.svgHeight)
 
         this.yearData = ['1960', '1964', '1968', '1972', '1976', '1980', '1984', '1988', '1992', '1996', '2000', '2004', '2008', '2012'];
+        console.log(this.yearData.length)
         this.yearDataVal = this.yearData.slice();
         for(let i = 0; i < this.yearData.length; i++) {
             this.yearData[i] =  this.yearData[i]+ '(' + hostObj[this.yearData[i]] + ')'
@@ -55,13 +56,10 @@ class HostChart {
         for(let i = 0; i < this.yearData.length; i++) {
             dataRequired.push()
         }
-        let max = 442;
-
-
-        console.log(max)
+        let max = 170;
         let yrScale = d3.scalePoint()
             .domain(this.yearData)
-            .range([self.margin.left, self.svgWidth - self.margin.right]);
+            .range([self.margin.left, self.svgWidth]);
 
 
         self.svg.append("line").attr("x1", 0)
@@ -79,8 +77,12 @@ class HostChart {
         yearData.attr("cx", d => yrScale(d))
             .attr("cy", self.svgHeight / 2)
             .attr("r", self.svgHeight / 10)
+            .style('fill', '#18bc9c')
+            .attr('id', d => d)
             .on("click", function (d) {
+                d3.selectAll('.selected-host').classed('selected-host', false)
                 self.updateChart(d)
+                d3.select(this).classed('selected-host', true)
             });
         let yearText = self.svg.selectAll("text").data(self.yearData);
         let text = yearText.enter().append("text");
@@ -99,15 +101,12 @@ class HostChart {
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
             .attr('id', 'hostPerformanceAxis')
 
-        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, max]);
-        let xScale = d3.scalePoint().range([0, this.svgWidth]).domain(this.yearData);
-
 
         this.drawXAxis(this.svg, this.svgWidth, this.svgHeight, this.yearData)
         this.drawYAxis(this.svg, this.svgWidth, this.svgHeight,  [0, max])
 
         this.svg.append("text")
-            .attr("x", (this.svgWidth / 2))
+            .attr("x", (this.svgWidth / 2) - this.margin.right)
             .attr("y", 0 - (this.margin.top / 2))
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
@@ -132,7 +131,9 @@ class HostChart {
 
     }
 
+
     updateChart(year) {
+        let self = this;
         d3.select('#hostPerformance').remove();
         let i = 0;
         let dataArray = [];
@@ -165,7 +166,7 @@ class HostChart {
         }
         let svg = this.svg.append('g').attr('id', 'hostPerformance')
 
-        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, 442]);
+        let yScale = d3.scaleLinear().range([this.svgHeight, 0]).domain([0, 170]);
         let xScale = d3.scalePoint().range([0, this.svgWidth ]).domain(this.yearData);
         let line = d3.line()
             .x(d => xScale(d.year))
@@ -188,7 +189,7 @@ class HostChart {
                     .style("fill", color(i))
                     .text(d.country)
                     .attr("text-anchor", "middle")
-                    .attr("x", 800)
+                    .attr("x", self.svgWidth/2)
                     .attr("y", 5);
             })
             .on("mouseout", function(d) {
@@ -267,6 +268,14 @@ class HostChart {
                     .transition()
                     .duration(10)
                     .attr("r", 2);
-            });    }
+            });
+    }
 
+    updateStory(index) {
+        d3.selectAll('.selected-host').classed('selected-host', false)
+        let year = this.yearData[index]
+        console.log(year)
+        this.updateChart(year)
+        document.getElementById(year).classList.add('selected-host')
+    }
 }
