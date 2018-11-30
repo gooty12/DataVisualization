@@ -202,6 +202,7 @@ class HostChart {
             .attr('d', d => line(d.points))
             //.attr('class', 'line-click')
             .style('stroke', (d, i) => color(i))
+            .style('stroke-width', '4px')
             .on("mouseover", function(d) {
                 d3.selectAll('.circle')
                     .style('opacity', 0.8);
@@ -261,7 +262,7 @@ class HostChart {
                 d3.select(this)
                     .transition()
                     .duration(10)
-                    .attr("r", 2);
+                    .attr("r", 5);
             })
             .on("mouseout", function(d) {
                 d3.select(this)

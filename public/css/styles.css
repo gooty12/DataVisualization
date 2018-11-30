@@ -476,6 +476,13 @@ path {
     stroke-width: 3px;
     fill: none
 }
+
+.selected-line-click{
+    opacity: 1.8;
+    stroke-width: 3px;
+    fill: none
+}
+
 .line {
     opacity: 0.2;
     stroke-width: 2px;
@@ -487,4 +494,8 @@ path {
 .selected-host {
     stroke: #404040;
     stroke-width: 4;
+}
+
+#heatmapView{
+    display: inline-block;
 }

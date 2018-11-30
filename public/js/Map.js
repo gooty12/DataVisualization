@@ -69,8 +69,15 @@ class WorldMap {
             .attr('class', 'country')
             .on('click', function (d) {
                 self.activeCountry = d.countryId;
-                d3.select('#' + self.activeCountry + '_line').classed('line', false)
-                d3.select('#' + self.activeCountry + '_line').classed('selected-line', true)
+
+                if(d3.select('#' + d.countryId + '_line').classed('selected-line-click')) {
+                    d3.select('#' + self.activeCountry + '_line').classed('selected-line-click', false)
+                    d3.select('#' + self.activeCountry + '_line').classed('line', true)
+                }
+                else {
+                    d3.select('#' + self.activeCountry + '_line').classed('line', false)
+                    d3.select('#' + self.activeCountry + '_line').classed('selected-line-click', true)
+                }
 
             })
             .append('title').html((d => self.tooltipRender(d.countryId)))
@@ -99,7 +106,36 @@ class WorldMap {
         this.drawYearBar()
         this.updateMap();
         this.updateLineChart('total')
-       // _this.drawLegend();
+        let dropDownData = [{'value': 'total', 'display' : 'Total'}, {'value': 'gold', 'display' : 'Gold'}, {'value': 'silver', 'display' : 'Silver'}, {'value': 'bronze', 'display' : 'Bronze'}];
+        d3.select('#country-drop-down').append("text")
+            .attr("x", (this.lineChartWidth/2))
+            .attr("y", 20)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Performance of all countries across olympics");
+        let select = d3.select('#country-drop-down').append("select").attr('id', 'medals-values')
+            .on('change', function () {
+                self.updateLineChart(this.value)
+            })
+            .selectAll("option")
+            .data(dropDownData)
+
+            .enter()
+
+            .append("option")
+            .attr("value", function(d){
+                return d.value;
+
+            })
+            .attr('id',d =>  d.value + '_option')
+            .text(function(d){
+                return d.display;
+            })
+
+
+
+        // _this.drawLegend();
         this.drawSunburst(2012)
     }
 
@@ -828,11 +864,10 @@ class WorldMap {
 
     updateLineChart(param) {
         let self = this;
-        d3.select('#countryDetails').remove();
         let dataArray = [];
         let yearScale = [];
         let max = -1;
-
+        d3.select('#country-detail').selectAll('*').remove();
 
         var duration = 250;
 
@@ -921,14 +956,18 @@ class WorldMap {
             //.attr('class', 'line-click')
             .style('stroke', (d, i) => color(i))
             .on("mouseover", function(d) {
+                if(!d3.select(this).classed('selected-line-click')) {
+                    d3.selectAll('.circle')
+                        .style('opacity', circleOpacityOnLineHover);
+                    d3.select(this)
+                        .classed('selected-line', true)
+                        .classed('line', false)
+                        .style("cursor", "pointer")
+                }
 
 
-                d3.selectAll('.circle')
-                    .style('opacity', circleOpacityOnLineHover);
-                d3.select(this)
-                    .classed('selected-line', true)
-                    .classed('line', false)
-                    .style("cursor", "pointer")
+
+
 
               /*  d3.select(this)
                     .style("cursor", "pointer")
@@ -941,13 +980,30 @@ class WorldMap {
                     .attr("y", d => yScale(d.medals) - 10);*/
             })
             .on("mouseout", function(d) {
-                d3.selectAll('.circle')
-                    .style('opacity', circleOpacity);
-                d3.select(this)
-                    .style("cursor", "none");
-                d3.select(this).classed('selected-line', false)
-                d3.select(this).classed('line', true)
+                if(!d3.select(this).classed('selected-line-click')) {
+                    d3.selectAll('.circle')
+                        .style('opacity', circleOpacityOnLineHover);
+                    d3.select(this)
+                        .classed('selected-line', false)
+                        .classed('line', true)
+                        .style("cursor", "pointer")
+                }
+
                 /*d3.select(this).selectAll('.text').remove();*/
+
+            })
+            .on('click', function (d) {
+                if(d3.select(this).classed('selected-line-click')) {
+                    d3.select(this).classed('selected-line-click', false)
+                    d3.select(this).classed('line', true)
+
+                }
+                else {
+                    d3.select(this).classed('line', false)
+                    d3.select(this).classed('selected-line', false)
+
+                    d3.select(this).classed('selected-line-click', true)
+                }
 
             })
             /*.on('click', function () {
@@ -1016,19 +1072,9 @@ class WorldMap {
                     .attr("r", circleRadius);
             });*/
 
-        let dropDownData = ["total", "gold", "silver", "bronze"];
-        let select = d3.select('#countryChart').append('select')
-            .attr('class','select')
-            .attr('id', 'medalOptions')
 
 
-        svg.append("text")
-            .attr("x", (this.lineChartWidth/2))
-            .attr("y", 0 - (this.margin.top / 2))
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .style("text-decoration", "underline")
-            .text("Performance of all countries across olympics");
+
 
         svg.append("text")
             .attr("transform",
@@ -1046,11 +1092,10 @@ class WorldMap {
             .style("text-anchor", "middle")
             .text("Medals");
 
-        let options = select
-            .selectAll('option')
-            .data(dropDownData).enter()
-            .append('option')
-            .text(function (d) { return d; });
+
+
+
+
 
        /* svg.selectAll(".dot")
             .data(dataArray)
