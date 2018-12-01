@@ -19,6 +19,7 @@ class WorldMap {
         this.projection = d3.geoWinkel3().scale(140).translate([365, 225]);
         this.year = defaultYear;
         this.svg = d3.select("#map-chart").append("svg");
+        this.svg.append('h2').attr('')
         this.mapSvg = this.svg.append("g");
         let olympicAnalysisDiv = d3.select("#olympic-analysis").classed("content", true);
 
@@ -107,13 +108,13 @@ class WorldMap {
         this.updateMap();
         this.updateLineChart('total')
         let dropDownData = [{'value': 'total', 'display' : 'Total Medals'}, {'value': 'gold', 'display' : 'Gold Medals'}, {'value': 'silver', 'display' : 'Silver Medals'}, {'value': 'bronze', 'display' : 'Bronze Medals'}];
-        d3.select('#country-drop-down').append("text")
+        /*d3.select('#country-drop-down').append("text")
             .attr("x", (this.lineChartWidth/2))
             .attr("y", 20)
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text("Performance of all countries across olympics");
+            .text("Performance of all countries across olympics");*/
         let select = d3.select('#country-drop-down').append("select").attr('id', 'medals-values')
             .on('change', function () {
                 self.updateLineChart(this.value)

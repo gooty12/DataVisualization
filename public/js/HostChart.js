@@ -30,6 +30,8 @@ class HostChart {
         this.hostObj = hostObj;
         this.mappings = mappings;
         this.countryAggregate = data;
+        this.colorList = {};
+
         this.createChart()
     }
 
@@ -68,6 +70,10 @@ class HostChart {
             .attr("y2", self.svgHeight / 2)
             .attr("class", "lineChart");
 
+        let color = d3.scaleOrdinal().range([
+            "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#484454", '#573957', '#383630'
+        ]);
+
         let yearData = self.svg.selectAll("circle").data(this.yearData);
         let circles = yearData.enter().append("circle").attr("id", d => d);
 
@@ -77,7 +83,17 @@ class HostChart {
         yearData.attr("cx", d => yrScale(d))
             .attr("cy", self.svgHeight / 2)
             .attr("r", self.svgHeight / 10)
-            .style('fill', '#18bc9c')
+            .style('fill', function(d, i) {
+                let country = self.hostObj[self.yearDataVal[i]];
+
+                if(self.colorList[country]) {
+                    return self.colorList[country]
+                }
+                self.colorList[country] = color(i)
+                return self.colorList[country];
+
+
+            })
             .attr('id', d => d)
             .on("click", function (d) {
                 d3.selectAll('.selected-host').classed('selected-host', false)
@@ -93,7 +109,8 @@ class HostChart {
         yearText.attr("x", d => yrScale(d) - 20)
             .attr("y", self.svgHeight / 2 + 30)
             .attr("class", "yearText")
-            .text(d => d);
+            .text(d => d)
+            .attr('color', (d, i) => color(i));
 
         this.svg = this.divChart.append('svg').attr("width", (this.svgWidth + this.margin.left + this.margin.right))
             .attr("height", (this.svgHeight + this.margin.top + this.margin.bottom))
@@ -176,7 +193,7 @@ class HostChart {
             .attr('class', 'lines');
 
         let color = d3.scaleOrdinal().range([
-            "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"
+            "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#484454", '#573957', '#383630'
         ]);
 
         lines.selectAll('.line-group')
@@ -201,7 +218,7 @@ class HostChart {
 
             .attr('d', d => line(d.points))
             //.attr('class', 'line-click')
-            .style('stroke', (d, i) => color(i))
+            .style('stroke', (d, i) => self.colorList[d.country])
             .style('stroke-width', '4px')
             .on("mouseover", function(d) {
                 d3.selectAll('.circle')

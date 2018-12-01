@@ -508,3 +508,17 @@ path {
 #country-drop-down select {
     margin-left: 515px;
 }
+#mapHeading {
+    margin-left: 65px;
+}
+
+#sunburstHeading{
+    margin-left: 300px;
+}
+
+#country-comparison-heading {
+    margin-left: 275px;
+}
+#host-nation-heading {
+    margin-left: 500px;
+}
