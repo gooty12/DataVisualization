@@ -3,7 +3,9 @@ This project deals with the visualization of Olympics stats from the year 1896 t
 
 ## Project Links
 The Project [Website](https://krunaljain.github.io/dataviscourse-olympics_stats/) has the live visualization.
+
 The [Process Book](https://github.com/krunaljain/dataviscourse-olympics_stats/blob/master/ProcessBook.pdf) has the details on the visualization and its interaction.
+
 The [Screencast](https://www.youtube.com/watch?v=n4mvRPAu46c) has a video demonstration of the visualization.
 
 ## Data
