@@ -215,7 +215,7 @@ class HostChart {
             .append('path')
             .attr('class', 'line')
             .attr('id', d => d.country + '_host_line')
-
+            .attr('opacity', 0.6)
             .attr('d', d => line(d.points))
             //.attr('class', 'line-click')
             .style('stroke', (d, i) => self.colorList[d.country])
@@ -254,6 +254,8 @@ class HostChart {
             .data(d => d.points).enter()
             .append("g")
             .attr("class", "circle")
+            .attr("class", "circle-group")
+
             .on("mouseover", function(d) {
                 d3.select(this)
                     .style("cursor", "pointer")
@@ -273,7 +275,7 @@ class HostChart {
             .append("circle")
             .attr("cx", d => xScale(d.year))
             .attr("cy", d => yScale(d.medals))
-            .attr("r", 0.5)
+            .attr("r", 2)
             .style('opacity', 2)
             .on("mouseover", function(d) {
                 d3.select(this)

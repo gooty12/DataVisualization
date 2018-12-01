@@ -522,3 +522,11 @@ path {
 #host-nation-heading {
     margin-left: 500px;
 }
+
+#host-subheading {
+    margin-left: 411px;
+}
+
+.selected-map {
+   fill: greenyellow;
+}

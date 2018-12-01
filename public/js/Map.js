@@ -70,6 +70,7 @@ class WorldMap {
             .attr('class', 'country')
             .on('click', function (d) {
                 self.activeCountry = d.countryId;
+                d3.select(this).classed('selected-map', !d3.select(this).classed('selected-map'))
 
                 if(d3.select('#' + d.countryId + '_line').classed('selected-line-click')) {
                     d3.select('#' + self.activeCountry + '_line').classed('selected-line-click', false)
