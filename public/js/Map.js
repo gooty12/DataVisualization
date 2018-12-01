@@ -427,7 +427,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text("Top performers");
+            .text("Top Performers (Countries)");
 
         svg.append("text")
             .attr("transform",
@@ -508,7 +508,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text("Top female participation");
+            .text("Top Female Participation");
 
         svg.append("text")
             .attr("transform",
@@ -572,7 +572,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text("Worst female participation");
+            .text("Worst Female Participation");
 
         svg.append("text")
             .attr("transform",
@@ -661,7 +661,7 @@ class WorldMap {
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
-            .text("Top performers(Regions)");
+            .text("Top Performers (Continents)");
 
         svg.append("text")
             .attr("transform",
